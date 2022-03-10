@@ -4,7 +4,11 @@
 #include <Arduino.h>
 
 byte voltageMeasurementPin = 32;
+
+// This will be different for each hardware device, and must be calculated from actual
+// measurements taken of the source voltage, to get the final voltage correct.
 float voltageDividerCalibration = 6.15;
+
 
 /**
  * @brief - voltageMultiplier() - reverses the effect of a physical voltage divider.
@@ -20,6 +24,7 @@ float voltageMultiplier(float endVolts, int R1, int R2) {
   return endVolts * (R1 + R2) / R2;
 }
 
+
 /**
  * @brief - readReply() - if delay_ms is > 0, does a delay(delay_ms), then reads the reply from an
  * AT command that was just sent, then displays it on Serial. Some of the AT commands seem to need
@@ -31,6 +36,7 @@ void readReply(int delay_ms = 0) {
      delay(delay_ms);
   Serial.println(Serial2.readStringUntil('\n'));
 }
+
 
 /**
  * @brief - sendAndReadReply() - displays "Sending sendString", then sends
@@ -56,6 +62,7 @@ void sendAndReadReply(String sendString, int delay_ms = 0) {
   readReply(delay_ms);
 }
 
+
 /**
  * @brief - getBattVolts() - reads the analogIn pin and converts the average of
  * 30 reads to voltage, then converts the voltage back into the original
@@ -64,6 +71,7 @@ void sendAndReadReply(String sendString, int delay_ms = 0) {
  * @return - returns a float that is the original measured voltage
  * 
 */
+
 
 float getBattVolts() {
   double average_read_value = 0.0;
@@ -89,6 +97,7 @@ float getBattVolts() {
   Serial.print("final voltage_value: "); Serial.println(voltage_value);
   return voltage_value;
 }
+
 
 /**
  * @brief - Sends a value (the battery voltage) to the base station.
