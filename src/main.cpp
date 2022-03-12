@@ -19,6 +19,11 @@
 #define NODE_ADDRESS 2
 
 byte LoRaPin = 15;
+byte voltageMeasurementPin = 32;
+
+// This will be different for each hardware device, and must be calculated from actual
+// measurements taken of the source voltage, to get the final voltage correct.
+float voltageDividerCalibration = 6.15;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -49,7 +54,7 @@ void setup() {
 #endif
 
   // Read the battery voltage and send it to the base station
-  sendBatteryVoltage(getBatteryVoltage());
+  sendLoRaData(getBatteryVoltage(voltageMeasurementPin, voltageDividerCalibration));
   delay(2000);
  
   // Turn off the LoRa to save battery
