@@ -3,13 +3,6 @@
 
 #include <Arduino.h>
 
-byte voltageMeasurementPin = 32;
-
-// This will be different for each hardware device, and must be calculated from actual
-// measurements taken of the source voltage, to get the final voltage correct.
-float voltageDividerCalibration = 6.15;
-
-
 /**
  * @brief - voltageMultiplier() - reverses the effect of a physical voltage divider.
  * 
@@ -70,13 +63,13 @@ void sendAndReadReply(String sendString, int delay_ms = 0) {
 */
 
 
-float getBatteryVoltage() {
+float getBatteryVoltage(byte voltageReadPin, float calibrationValue) {
   double average_read_value = 0.0;
   float voltage_value = 0.0;
   
   // Calculate an avg of 30 analogRead values taken 30 ms apart
   for (int i = 0; i < 30; i++) {
-    average_read_value += analogRead(voltageMeasurementPin);
+    average_read_value += analogRead(voltageReadPin);
     delay(30);
   }
   average_read_value = average_read_value / 30;
@@ -93,7 +86,7 @@ float getBatteryVoltage() {
   // of the physical resistors in the circuit.
   // voltage_value = voltageMultiplier(voltage_value, 9420, 2143);
   // For now, use the calculated voltageDividerCalibration (the value necessary to make the output accurate)
-  voltage_value = voltage_value * voltageDividerCalibration;
+  voltage_value = voltage_value * calibrationValue;
   Serial.print("final voltage_value: "); Serial.println(voltage_value);
   return voltage_value;
 }
@@ -105,7 +98,7 @@ float getBatteryVoltage() {
  * @param - voltage - the value that is to be sent to the base station.
  */
 
-void sendBatteryVoltage(float voltage) {
+void sendLoRaData(float voltage) {
   // 10 is the address of the recipient (the base station)
   // 7 is the <Data> length.
   // 2 is Jim's network number, used by his code to "separate" my network from his.
