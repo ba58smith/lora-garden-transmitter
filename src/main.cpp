@@ -24,16 +24,16 @@
 #define BASE_STATION 10
 
 // Used to power the LoRa radio on or off.
-uint8_t LoRaPin = 15;
+uint8_t lora_pin = 15;
 
-uint8_t voltageMeasurementPin = 32;
+uint8_t voltage_measurement_pin = 32;
 
 // This will be different for each transmitter device, and must be calculated from actual
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
 // at 12.60 known input voltage.
-float voltageDividerCalibration = 6.15;
+float voltage_divider_calibration = 6.15;
 
-ReyaxLoRa lora(LoRaPin, NETWORK_ID, NODE_ADDRESS, BASE_STATION);
+ReyaxLoRa lora(lora_pin, NETWORK_ID, NODE_ADDRESS, BASE_STATION);
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -48,15 +48,15 @@ void setup() {
 #endif
 
   // Read the battery voltage and send it to the base station
-  lora.sendData(getBatteryVoltage(voltageMeasurementPin, voltageDividerCalibration));
+  lora.send_data(get_battery_voltage(voltage_measurement_pin, voltage_divider_calibration));
   delay(2000);
  
   // Turn off the LoRa to save battery
-  lora.turnOff(); 
+  lora.turn_off(); 
   
   // Get ready to "hibernate"
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  prepareHibernation();
+  prepare_hibernation();
   esp_deep_sleep_start();
   
 } // setup()
