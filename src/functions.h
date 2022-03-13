@@ -19,27 +19,29 @@ float voltage_multiplier(float end_volts, int R1, int R2) {
 
 /**
  * @brief - get_battery_voltage() - reads the voltage_measurement_pin and converts
- * the average of 30 reads to voltage, then converts the voltage back into the original
+ * the average of all the reads to voltage, then converts the voltage back into the original
  * measured voltage, prior to the physical voltage divider circuit.
  * 
  * @return - returns a float that is the original measured voltage.
 */
 
 float get_battery_voltage(uint8_t voltage_read_pin, float calibration_value) {
-  double average_read_value = 0.0;
+  int read_delay = 20;
+  int num_samples = 100;
+  double average_ADC_value = 0.0;
   float voltage_value = 0.0;
 
-  // Calculate an avg of 30 analogRead values taken 30 ms apart
-  for (int i = 0; i < 30; i++) {
-    average_read_value += analogRead(voltage_read_pin);
-    delay(30);
+  // Calculate an avg of num_samples analogRead values taken read_delay ms apart
+  for (int i = 0; i < num_samples; i++) {
+    average_ADC_value += analogRead(voltage_read_pin);
+    delay(read_delay);
   }
-  average_read_value = average_read_value / 30;
-  Serial.print("average_read_value: ");
-  Serial.println(average_read_value);
+  average_ADC_value = average_ADC_value / num_samples;
+  Serial.print("average_ADC_value: ");
+  Serial.println(average_ADC_value);
 
   // Convert avg analogRead value (0 - 4095) to voltage
-  voltage_value = (float)(average_read_value / 4096 * 3.3);
+  voltage_value = (float)(average_ADC_value / 4096 * 3.3);
   Serial.print("voltage_value: ");
   Serial.println(voltage_value);
 
