@@ -17,43 +17,6 @@ float voltageMultiplier(float endVolts, int R1, int R2) {
   return endVolts * (R1 + R2) / R2;
 }
 
-
-/**
- * @brief - readReply() - if delay_ms is > 0, does a delay(delay_ms), then reads the reply from an
- * AT command that was just sent, then displays it on Serial. Some of the AT commands seem to need
- * the delay before reading the reply. (AT+SEND is one of them.)
- */
-
-void readReply(int delay_ms = 0) {
-  if (delay_ms)
-     delay(delay_ms);
-  Serial.println(Serial2.readStringUntil('\n'));
-}
-
-
-/**
- * @brief - sendAndReadReply() - displays "Sending sendString", then sends
- * sendString to the LoRa. Then it delays (optionally), and reads the reply,
- * displaying it on the Serial Monitor.
- * 
- * @usage - sendString is "AT+" plus the AT Command plus the parameters, if any.
- * Do NOT include the "\r\n" at the end - it will be added to sendString before sending.
- * 
- * @param sendString - the String you want to send to the LoRa, including the leading "AT+".
- * 
- * @param delay_ms - OPTIONAL - number of ms to delay after the send and before the read. Any
- * non-zero value will cause the delay to occur.
- */
-
-void sendAndReadReply(String sendString, int delay_ms = 0) {
-  String command = sendString + String("\r\n");
-  String sending = String("Sending: ") + command;
-  Serial.println(sending);
-  Serial2.print(command);
-  readReply(delay_ms);
-}
-
-
 /**
  * @brief - getBatteryVoltage() - reads the voltageMeasurementPin and converts
  * the average of 30 reads to voltage, then converts the voltage back into the original
@@ -63,7 +26,7 @@ void sendAndReadReply(String sendString, int delay_ms = 0) {
 */
 
 
-float getBatteryVoltage(byte voltageReadPin, float calibrationValue) {
+float getBatteryVoltage(uint8_t voltageReadPin, float calibrationValue) {
   double average_read_value = 0.0;
   float voltage_value = 0.0;
   
@@ -89,25 +52,6 @@ float getBatteryVoltage(byte voltageReadPin, float calibrationValue) {
   voltage_value = voltage_value * calibrationValue;
   Serial.print("final voltage_value: "); Serial.println(voltage_value);
   return voltage_value;
-}
-
-
-/**
- * @brief - Sends a value (the battery voltage) to the base station.
- * 
- * @param - voltage - the value that is to be sent to the base station.
- */
-
-void sendLoRaData(float voltage) {
-  // 10 is the address of the recipient (the base station)
-  // 7 is the <Data> length.
-  // 2 is Jim's network number, used by his code to "separate" my network from his.
-  // The correct command below should be "AT+SEND=10,5,<voltage>", and the receiver code
-  // needs to just drop the lines that deal with the so-called network ID.
-  // String(voltage, 2); makes voltage always have two decimal places.
-
-  String payload = "AT+SEND=10,7,2," + String(voltage, 2);
-  sendAndReadReply(payload, 500);
 }
 
 
