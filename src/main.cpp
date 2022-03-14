@@ -3,9 +3,10 @@
 #include <Arduino.h>
 #include "functions.h"
 #include "reyax_lora.h"
+#include "analog_reader.h"
 
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for micro seconds to seconds
-#define TIME_TO_SLEEP  565         // 565 seconds == 9 minutes and 25 seconds
+#define TIME_TO_SLEEP  560         // 560 seconds == 9 minutes and 20 seconds
 
 // If you change the NETWORK_ID or NODE_ADDRESS, below:
 // Un-comment "#define LORA_SETUP_REQUIRED", upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
@@ -28,12 +29,18 @@ uint8_t lora_pin = 15;
 
 uint8_t voltage_measurement_pin = 32;
 
+// Measured values of the two voltage divider resistors
+#define R1_VALUE 9500.0
+#define R2_VALUE 2145.0
+
 // This will be different for each transmitter device, and must be calculated from actual
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
-// at 12.60 known input voltage.
-float voltage_divider_calibration = 6.15;
+// at 12.60 for known input voltage.
+#define VOLTAGE_CALIBRATION 1.029
 
 ReyaxLoRa lora(lora_pin, NETWORK_ID, NODE_ADDRESS, BASE_STATION);
+
+ESP32AnalogReader voltage_sensor(voltage_measurement_pin);
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -48,7 +55,20 @@ void setup() {
 #endif
 
   // Read the battery voltage and send it to the base station
-  lora.send_data(get_battery_voltage(voltage_measurement_pin, voltage_divider_calibration));
+  // But first, calibrate the ADC
+  voltage_sensor.configure();
+  float voltage = voltage_sensor.read();
+  
+  // Reverse the effect of the voltage divider circuit
+  voltage = voltage_multiplier(voltage, R1_VALUE, R2_VALUE);
+  
+  // Apply the final calibration adjustment
+  voltage = voltage * VOLTAGE_CALIBRATION;
+  
+  // And send the value to the LoRa to transmit
+  lora.send_data(voltage);
+  
+  // Don't turn it off too soon
   delay(2000);
  
   // Turn off the LoRa to save battery
