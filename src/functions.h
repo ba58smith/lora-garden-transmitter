@@ -18,47 +18,6 @@ float voltage_multiplier(float end_volts, int R1, int R2) {
 }
 
 /**
- * @brief - get_battery_voltage() - reads the voltage_measurement_pin and converts
- * the average of all the reads to voltage, then converts the voltage back into the original
- * measured voltage, prior to the physical voltage divider circuit.
- * 
- * @return - returns a float that is the original measured voltage.
-*/
-
-float get_battery_voltage(uint8_t voltage_read_pin, float calibration_value) {
-  int read_delay = 20;
-  int num_samples = 100;
-  double average_ADC_value = 0.0;
-  float voltage_value = 0.0;
-
-  // Calculate an avg of num_samples analogRead values taken read_delay ms apart
-  for (int i = 0; i < num_samples; i++) {
-    average_ADC_value += analogRead(voltage_read_pin);
-    delay(read_delay);
-  }
-  average_ADC_value = average_ADC_value / num_samples;
-  Serial.print("average_ADC_value: ");
-  Serial.println(average_ADC_value);
-
-  // Convert avg analogRead value (0 - 4095) to voltage
-  voltage_value = (float)(average_ADC_value / 4096 * 3.3);
-  Serial.print("voltage_value: ");
-  Serial.println(voltage_value);
-
-  // Convert average measured voltage to voltage before the voltage divider
-  // IOW, reverse the effect of the voltage divider
-  // BUT, it doesn't work, because I think there's a problem with the physical circuit,
-  // based on my measurement of the actual voltage being measured and of the ohms value
-  // of the physical resistors in the circuit.
-  // voltage_value = voltage_multiplier(voltage_value, 9420, 2143);
-  // For now, use the calculated calibration_value (the value necessary to make the output accurate)
-  voltage_value = voltage_value * calibration_value;
-  Serial.print("final voltage_value: ");
-  Serial.println(voltage_value);
-  return voltage_value;
-}
-
-/**
  * @brief - prepare_hibernation() tells the ESP all the things to turn off when the
  * "deep sleep" command is issued. 
  */
