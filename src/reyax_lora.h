@@ -1,5 +1,5 @@
 #ifndef _REYAX_LORA_H_
-#define _REYAX_LORA_H
+#define _REYAX_LORA_H_
 
 #include "Arduino.h"
 
