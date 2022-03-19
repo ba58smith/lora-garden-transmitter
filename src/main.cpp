@@ -6,37 +6,23 @@
 #include "analog_reader.h"
 
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for micro seconds to seconds
-#define TIME_TO_SLEEP  560         // 560 seconds == 9 minutes and 20 seconds
 
-// If you change the NETWORK_ID or NODE_ADDRESS, below:
+// If you change the NETWORK_ID (below) or NODE_ADDRESS (in config.h):
 // Un-comment "#define LORA_SETUP_REQUIRED", upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
 // That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
-// #define LORA_SETUP_REQUIRED
+//#define LORA_SETUP_REQUIRED
 
-// Network must be the same (2) for all of my units to communicate w/ each other
-#define NETWORK_ID 2
-
-// Address must be 1 for the base station to recognize it as Bessie1. Stored in EEPROM.
-// Address must be 2 for Bessie2, and 3 for Boat.
-#define NODE_ADDRESS 2
-
-// Used to set the recipient address for all LoRa transmissions.
-// My base station's address is 10.
-#define BASE_STATION 10
+// Un-comment only one of the following transmitters, to set all the configuration variables
+// for that transmitter (defined in config.h).
+#define BESSIE_1
+//#define BESSIE_2
+//#define BOAT
+#include "config.h"
 
 // Used to power the LoRa radio on or off.
 uint8_t lora_pin = 15;
 
 uint8_t voltage_measurement_pin = 32;
-
-// Measured values of the two voltage divider resistors
-#define R1_VALUE 9500.0
-#define R2_VALUE 2145.0
-
-// This will be different for each transmitter device, and must be calculated from actual
-// measurements taken of the source voltage, to get the final voltage correct. Calibrate
-// at 12.60 for known input voltage.
-#define VOLTAGE_CALIBRATION 1.029
 
 ReyaxLoRa lora(lora_pin, NETWORK_ID, NODE_ADDRESS, BASE_STATION);
 
