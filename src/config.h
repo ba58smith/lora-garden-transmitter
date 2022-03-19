@@ -31,7 +31,7 @@
 #ifdef BOAT
 #define TIME_TO_SLEEP  575  // 575 seconds == 9 minutes and 35 seconds
 #define NODE_ADDRESS 3
-#define R1_VALUE ????.0
-#define R2_VALUE ????.0
-#define VOLTAGE_CALIBRATION 1.0??
+#define R1_VALUE 9480.0
+#define R2_VALUE 2158.0
+#define VOLTAGE_CALIBRATION 1.020
 #endif
