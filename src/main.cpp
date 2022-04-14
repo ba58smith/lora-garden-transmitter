@@ -4,27 +4,27 @@
 #include "functions.h"
 #include "reyax_lora.h"
 #include "analog_reader.h"
+#include "config.h"
 
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for micro seconds to seconds
 
-// If you change the NETWORK_ID (below) or NODE_ADDRESS (in config.h):
-// Un-comment "#define LORA_SETUP_REQUIRED", upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
-// That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
+/**
+ * Before building, look at all of the #define options in config.h. At the very least,
+ * make sure you un-comment the correct #define for the name of the transmitter that this code is
+ * going to be used for.
+ * 
+ * If you change the NETWORK_ID or NODE_ADDRESS (in config.h):
+ * Un-comment "#define LORA_SETUP_REQUIRED" below, upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
+ * That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
+ */
 //#define LORA_SETUP_REQUIRED
 
-// Un-comment only one of the following transmitters, to set all the configuration variables
-// for that transmitter (defined in config.h).
-#define BESSIE_1
-//#define BESSIE_2
-//#define BOAT
-#include "config.h"
-
-// Used to power the LoRa radio on or off.
+// Used to power the LoRa radio on and off.
 uint8_t lora_pin = 15;
 
 uint8_t voltage_measurement_pin = 32;
 
-ReyaxLoRa lora(lora_pin, NETWORK_ID, NODE_ADDRESS, BASE_STATION);
+ReyaxLoRa lora(lora_pin);
 
 ESP32AnalogReader voltage_sensor(voltage_measurement_pin);
 
@@ -58,7 +58,7 @@ void setup() {
   delay(2000);
  
   // Turn off the LoRa to save battery
-  lora.turn_off(); 
+  lora.turn_off();
   
   // Get ready to "hibernate"
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
