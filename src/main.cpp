@@ -13,7 +13,7 @@
  * make sure you un-comment the correct #define for the name of the transmitter that this code is
  * going to be used for.
  * 
- * If you change the NETWORK_ID or NODE_ADDRESS (in config.h):
+ * If you change the #defined transmitter or the NETWORK_ID (in config.h):
  * Un-comment "#define LORA_SETUP_REQUIRED" below, upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
  * That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
  */

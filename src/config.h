@@ -2,7 +2,9 @@
 #define _CONFIG_H_
 
 // Un-comment only one of the following units, to set all the configuration variables
-// for that unit (defined below).
+// for that unit (defined below). If you change this, the first upload to the transmitter
+// must be with //#define LORA_SETUP_REQUIRED in main.cpp UN-commented. Upload it, it will
+// write the LORA_NODE_ADDRESS to EEPROM, then RE-comment that line, and upload again.
 //#define BESSIE
 #define TEST
 //#define BOAT
@@ -32,13 +34,13 @@ String TRANSMITTER_NAME = "Bessie";
 // at 12.60 for known input voltage.
 #define VOLTAGE_CALIBRATION 1.038
 #define VOLTAGE_ALARM_RANGE_LOWER 12.20
-#define VOLTAGE_ALARM_RANGE_UPPER 14.00
+#define VOLTAGE_ALARM_RANGE_UPPER 14.10
 #define VOLTAGE_ALARM_CODE 11
 #endif
 
 #ifdef TEST
 String TRANSMITTER_NAME = "Test";
-#define TIME_TO_SLEEP 560 // 560 seconds == 9 minutes and 20 seconds
+#define TIME_TO_SLEEP 15 // 560 seconds == 9 minutes and 20 seconds
 #define LORA_NODE_ADDRESS 2202UL
 #define R1_VALUE 9500.0
 #define R2_VALUE 2145.0
@@ -56,7 +58,7 @@ String TRANSMITTER_NAME = "Boat";
 #define R2_VALUE 2158.0
 #define VOLTAGE_CALIBRATION 1.020
 #define VOLTAGE_ALARM_RANGE_LOWER 12.20
-#define VOLTAGE_ALARM_RANGE_UPPER 14.00
+#define VOLTAGE_ALARM_RANGE_UPPER 14.10
 #define VOLTAGE_ALARM_CODE 31
 #endif
 
