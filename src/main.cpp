@@ -43,7 +43,13 @@ void setup() {
   // Read the battery voltage and send it to the base station
   // But first, calibrate the ADC
   voltage_sensor.configure();
-  float voltage = voltage_sensor.read();
+  float voltage = 0;
+  // get an average of 30 reads, 50ms apart
+  for (uint8_t x = 0; x < 30; x++) {
+    voltage += voltage_sensor.read();
+    delay(50);
+  }
+  voltage = voltage / 30.0;
   
   // Reverse the effect of the voltage divider circuit
   voltage = voltage_multiplier(voltage, R1_VALUE, R2_VALUE);

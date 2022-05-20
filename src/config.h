@@ -6,8 +6,8 @@
 // must be with //#define LORA_SETUP_REQUIRED in main.cpp UN-commented. Upload it, it will
 // write the LORA_NODE_ADDRESS to EEPROM, then RE-comment that line, and upload again.
 //#define BESSIE
-#define TEST
-//#define BOAT
+//#define TEST
+#define BOAT
 
 // Network must be the same (2) for all of my units to communicate w/ each other.
 // After re-writing the receiver code, this will change to some other unique identifier.
@@ -24,7 +24,7 @@
 
 #ifdef BESSIE
 String TRANSMITTER_NAME = "Bessie";
-#define TIME_TO_SLEEP 545 // 545 seconds == 9 minutes and 5 seconds
+#define TIME_TO_SLEEP 890 // 890 seconds == 14 minutes and 50 seconds
 #define LORA_NODE_ADDRESS 2201UL
 // Measured values of the two voltage divider resistors
 #define R1_VALUE 9400.0
@@ -52,7 +52,7 @@ String TRANSMITTER_NAME = "Test";
 
 #ifdef BOAT
 String TRANSMITTER_NAME = "Boat";
-#define TIME_TO_SLEEP 575 // 575 seconds == 9 minutes and 35 seconds
+#define TIME_TO_SLEEP 880 // 880 seconds == 14 minutes and 40 seconds
 #define LORA_NODE_ADDRESS 2203UL
 #define R1_VALUE 9480.0
 #define R2_VALUE 2158.0
