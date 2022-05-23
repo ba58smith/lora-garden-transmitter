@@ -169,7 +169,7 @@ public:
             alarm_code = VOLTAGE_ALARM_CODE;
         }
         uint16_t address = LORA_BASE_STATION_ADDRESS;
-        String data_str = String(TRANSMITTER_NAME + "%Voltage%" + volt_str + "%" + alarm_code);
+        String data_str = String(TRANSMITTER_NAME + "%Voltage%" + volt_str + "%" + alarm_code + "%" + VOLTAGE_ALARM_EMAIL_THRESHOLD);
         uint8_t data_length = data_str.length();
         String payload = "AT+SEND=" + String(address) + ","
                          + String(data_length) + "," 
