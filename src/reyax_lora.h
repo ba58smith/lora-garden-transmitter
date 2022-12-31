@@ -4,9 +4,25 @@
 #include "Arduino.h"
 #include "config.h"
 
-class ReyaxLoRa
-{
+class ReyaxLoRa {
+private:
+    uint8_t pin_;
+    // All variables below are set to the factory defaults.
+    // Change any of them with the appropriate "set" method.
+    int64_t frequency_ = 915000000;
+    int32_t baud_rate_ = 115200;
+    int8_t output_power_ = 15;
+    int8_t spread_factor_ = 12;
+    int8_t bandwidth_ = 7;
+    int8_t coding_rate_ = 1;
+    int8_t preamble_ = 4;
+
 public:
+    enum {
+        LOW_WATER_FLOAT,
+        HIGH_WATER_FLOAT
+    };
+
     // Constructor for the transmitter. pin is the "power pin" for the LoRa radio.
     ReyaxLoRa(uint8_t pin)
         : pin_{pin}
@@ -85,9 +101,12 @@ public:
         output_power_ = power;
     }
 
+// BAS: change some of these to try to improve the connection. Too many failed attempts for some reason.
+
     /**
      * @brief set_spread_factor() is used only to change the default
-     * of 12
+     * of 12. Larger spreading factor improves sensitivity (reliability), slows transmission.
+     * 12 is the default, and is the highest, so don't change it.
      */
     
     void set_spread_factor(int8_t spread) {
@@ -96,7 +115,16 @@ public:
 
     /**
      * @brief set_bandwidth() is used only to change the default
-     * of 7
+     * of 7. Smaller bandwidth improves sensitivity (reliability), slows transmission.
+     * 7 is the default, the range is 2 - 9.
+     * 2 : 15.6KHz
+     * 3 : 20.8 KHz
+     * 4 : 31.25 KHz
+     * 5 : 41.7 KHz
+     * 6 : 62.5 KHz
+     * 7 : 125 KHz (default)
+     * 8 : 250 KHz
+     * 9 : 500 KHz
      */
 
     void set_bandwidth(int8_t bandwidth) {
@@ -105,7 +133,9 @@ public:
 
     /**
      * @brief set_coding_rate() is used only to change the default
-     * of 1
+     * of 1. A higher coding rate will not increase range, but will make a link more reliable,
+     * and will slow down the transmission.
+     * Values are 1 - 4.
      */
 
     void set_coding_rate(int8_t rate) {
@@ -114,7 +144,9 @@ public:
     
     /**
      * @brief set_preamble() is used only to change the default
-     * of 4
+     * of 4. A higher preamble will improve the reliability of the transmission, but
+     * will slow it down a little.
+     * Values are 4 - 7. 
      */
     
     void set_preamble(int8_t preamble) {
@@ -154,16 +186,14 @@ public:
         read_reply(delay_ms);
     }
 
-    #ifndef BASE_STATION
      /**
      * @brief Sends voltage data from a transmitter to the base station
      * 
      * @param voltage 
      */
 
-    void send_data(float voltage) {
-        // String(voltage, 2); makes voltage always have two decimal places.
-        String volt_str = String(voltage, 2);
+    void send_voltage_data(float voltage) {
+        String volt_str = String(voltage, 2); // makes voltage always have two decimal places
         uint16_t alarm_code = 0;
         if (voltage < VOLTAGE_ALARM_RANGE_LOWER || voltage > VOLTAGE_ALARM_RANGE_UPPER) {
             alarm_code = VOLTAGE_ALARM_CODE;
@@ -176,23 +206,54 @@ public:
                          + data_str;
         send_and_read_reply(payload, 500);
     }
-    #endif
+
+    /**
+     * @brief Sends a packet with the water temperature
+     */
+
+    void send_temperature_data(float temperature) {
+        String temp_str = String(temperature, 1); // makes temperature always have one decimal place
+        uint16_t alarm_code = 0;
+        if (temperature < TEMPERATURE_ALARM_RANGE_LOWER || temperature > TEMPERATURE_ALARM_RANGE_UPPER) {
+            alarm_code = TEMPERATURE_ALARM_CODE;
+        }
+        uint16_t address = LORA_BASE_STATION_ADDRESS;
+        String data_str = String(TRANSMITTER_NAME + "%Temp%" + temp_str + "%" + alarm_code + "%" + TEMPERATURE_ALARM_EMAIL_THRESHOLD);
+        uint8_t data_length = data_str.length();
+        String payload = "AT+SEND=" + String(address) + ","
+                         + String(data_length) + "," 
+                         + data_str;
+        send_and_read_reply(payload, 500);
+    }
+
+
+
+    /**
+     * @brief Sends a packet with info about the status of the high water or
+     * low water float. Called in setup() if a float pin is HIGH (to activate an alarm),
+     * or if a float pin that WAS high during the last run is now LOW (to deactivate
+     * an alarm).
+     * 
+     * @param  float_type: LOW_WATER_FLOAT or HIGH_WATER_FLOAT
+     * @param float_pin_status HIGH (1) or LOW (0).
+     */
+
+    void send_float_data(uint8_t float_type, uint8_t float_pin_status) {
+        String float_name = (float_type == LOW_WATER_FLOAT) ? "LoWater" : "HiWater";
+        uint16_t alarm_code = (float_pin_status == LOW) ? 0 : HIGH_LOW_WATER_ALARM_CODE;
+        uint16_t address = LORA_BASE_STATION_ADDRESS;
+        String data_str = String(TRANSMITTER_NAME + "%" + float_name + "%" + String(float_pin_status)
+                          + "%" + alarm_code + "%" + HIGH_LOW_WATER_EMAIL_THRESHOLD);
+        uint8_t data_length = data_str.length();
+        String payload = "AT+SEND=" + String(address) + ","
+                         + String(data_length) + "," 
+                         + data_str;
+        send_and_read_reply(payload, 500);
+    }
 
     void turn_off() {
         digitalWrite(pin_, LOW);
     }
-
-private:
-    uint8_t pin_;
-    // All variables below are set to the factory defaults.
-    // Change any of them with the appropriate "set" method.
-    int64_t frequency_ = 915000000;
-    int32_t baud_rate_ = 115200;
-    int8_t output_power_ = 15;
-    int8_t spread_factor_ = 12;
-    int8_t bandwidth_ = 7;
-    int8_t coding_rate_ = 1;
-    int8_t preamble_ = 4;
 
 }; // class ReyaxLoRa
 
