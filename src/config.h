@@ -16,28 +16,24 @@
 
 // Configure each of the variables below for each transmitter
 
-String TRANSMITTER_NAME = "Pool";
+String TRANSMITTER_NAME = "Garden";
 #define TIME_TO_SLEEP 890 // 1800 seconds == 30 minutes
-#define LORA_NODE_ADDRESS 2204UL // Bessie=2201, Boat=2202, Test=2203, Pool=2204, Garden=2205
+#define LORA_NODE_ADDRESS 2205UL // Bessie=2201, Boat=2202, Test=2203, Pool=2204, Garden=2205
 // Measured values of the two voltage divider resistors BAS: calculate and measure these
-#define R1_VALUE 9400.0
+#define R1_VALUE 9400.0 //BAS: change these to actual measured values
 #define R2_VALUE 2144.0
 // This will be different for each transmitter device, and must be calculated from actual
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
 // at normal battery voltage for known input voltage.
 #define VOLTAGE_CALIBRATION 1.038  // BAS: to do
 #define HIGH_WATER_FLOAT_PIN 34
-#define LOW_WATER_FLOAT_PIN 35
-#define HIGH_LOW_WATER_ALARM_CODE 323
-#define HIGH_LOW_WATER_EMAIL_THRESHOLD 3 // In MINUTES
-#define VOLTAGE_ALARM_RANGE_LOWER 3.60 //BAS: verify this, and RANGE_UPPER, for an 18650
+#define VOLTAGE_ALARM_RANGE_LOWER 3.60 //BAS: change this, and RANGE_UPPER, for a LiFePO4
 #define VOLTAGE_ALARM_RANGE_UPPER 4.20
 #define VOLTAGE_ALARM_CODE 11 // Not a very important alarm
 #define VOLTAGE_ALARM_EMAIL_THRESHOLD 240 // In MINUTES
-#define TEMPERATURE_ALARM_RANGE_LOWER 50.0 //
-#define TEMPERATURE_ALARM_RANGE_UPPER 90.0 // To remind that the heater is on
-#define TEMPERATURE_ALARM_CODE 11 // Not a very important alarm
-#define TEMPERATURE_ALARM_EMAIL_THRESHOLD 120 // In MINUTES
-
+#define PH_ALARM_RANGE_LOWER 1.0 // BAS: change these
+#define PH_ALARM_RANGE_UPPER 9.0
+#define PH_ALARM_CODE 11
+#define PH_ALARM_EMAIL_THRESHOLD 240 // BAS: change this
 
 #endif // #ifndef _CONFIG_H_

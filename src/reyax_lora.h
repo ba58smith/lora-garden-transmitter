@@ -208,48 +208,23 @@ public:
     }
 
     /**
-     * @brief Sends a packet with the water temperature
+     * @brief Sends a packet with the pH value of the water
      */
 
-    void send_temperature_data(float temperature) {
-        String temp_str = String(temperature, 1); // makes temperature always have one decimal place
+    void send_pH_data(float pH) {
+        String pH_str = String(pH, 1); // makes pH always have one decimal place
         uint16_t alarm_code = 0;
-        if (temperature < TEMPERATURE_ALARM_RANGE_LOWER || temperature > TEMPERATURE_ALARM_RANGE_UPPER) {
-            alarm_code = TEMPERATURE_ALARM_CODE;
+        if (pH < PH_ALARM_RANGE_LOWER || pH > PH_ALARM_RANGE_UPPER) {
+            alarm_code = PH_ALARM_CODE;
         }
         uint16_t address = LORA_BASE_STATION_ADDRESS;
-        String data_str = String(TRANSMITTER_NAME + "%Temp%" + temp_str + "%" + alarm_code + "%" + TEMPERATURE_ALARM_EMAIL_THRESHOLD);
+        String data_str = String(TRANSMITTER_NAME + "%pH%" + pH_str + "%" + alarm_code + "%" + PH_ALARM_EMAIL_THRESHOLD);
         uint8_t data_length = data_str.length();
         String payload = "AT+SEND=" + String(address) + ","
                          + String(data_length) + "," 
                          + data_str;
         send_and_read_reply(payload, 500);
-    }
-
-
-
-    /**
-     * @brief Sends a packet with info about the status of the high water or
-     * low water float. Called in setup() if a float pin is HIGH (to activate an alarm),
-     * or if a float pin that WAS high during the last run is now LOW (to deactivate
-     * an alarm).
-     * 
-     * @param  float_type: LOW_WATER_FLOAT or HIGH_WATER_FLOAT
-     * @param float_pin_status HIGH (1) or LOW (0).
-     */
-
-    void send_float_data(uint8_t float_type, uint8_t float_pin_status) {
-        String float_name = (float_type == LOW_WATER_FLOAT) ? "LoWater" : "HiWater";
-        uint16_t alarm_code = (float_pin_status == LOW) ? 0 : HIGH_LOW_WATER_ALARM_CODE;
-        uint16_t address = LORA_BASE_STATION_ADDRESS;
-        String data_str = String(TRANSMITTER_NAME + "%" + float_name + "%" + String(float_pin_status)
-                          + "%" + alarm_code + "%" + HIGH_LOW_WATER_EMAIL_THRESHOLD);
-        uint8_t data_length = data_str.length();
-        String payload = "AT+SEND=" + String(address) + ","
-                         + String(data_length) + "," 
-                         + data_str;
-        send_and_read_reply(payload, 500);
-    }
+    }    
 
     void turn_off() {
         digitalWrite(pin_, LOW);
