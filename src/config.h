@@ -17,7 +17,7 @@
 // Configure each of the variables below for each transmitter
 
 String TRANSMITTER_NAME = "Garden";
-#define TIME_TO_SLEEP 890 // 1800 seconds == 30 minutes
+#define TIME_TO_SLEEP 300 // 5 minutes
 #define LORA_NODE_ADDRESS 2205UL // Bessie=2201, Boat=2202, Test=2203, Pool=2204, Garden=2205
 // Measured values of the two voltage divider resistors BAS: calculate and measure these
 #define R1_VALUE 9400.0 //BAS: change these to actual measured values
@@ -26,14 +26,41 @@ String TRANSMITTER_NAME = "Garden";
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
 // at normal battery voltage for known input voltage.
 #define VOLTAGE_CALIBRATION 1.038  // BAS: to do
-#define HIGH_WATER_FLOAT_PIN 34
-#define VOLTAGE_ALARM_RANGE_LOWER 3.60 //BAS: change this, and RANGE_UPPER, for a LiFePO4
-#define VOLTAGE_ALARM_RANGE_UPPER 4.20
-#define VOLTAGE_ALARM_CODE 11 // Not a very important alarm
-#define VOLTAGE_ALARM_EMAIL_THRESHOLD 240 // In MINUTES
-#define PH_ALARM_RANGE_LOWER 1.0 // BAS: change these
-#define PH_ALARM_RANGE_UPPER 9.0
-#define PH_ALARM_CODE 11
-#define PH_ALARM_EMAIL_THRESHOLD 240 // BAS: change this
+
+#define ETAPE_R2_OHMS 1595.0 // measured ohms value of black-white pins on eTape
+#define ETAPE_VIN 3.3 // Voltage from ESP32 provided to the Vin pin on eTape
+#define GALLONS_BELOW_ETAPE 5.0 // BAS: measure this
+#define ETAPE_OHMS_PER_INCH 150 // Per the eTape datasheet
+#define TUB_GALLONS_PER_INCH 0.90 // Measuring the TOP of the range, where the tub is wider //BAS: measure this
+#define GALLONS_PER_MINUTE 1.30 // How many gallons per minute the fill_pump moves //BAS: measure this
+#define AUTO_FILL_ALARM_CODE 1
+#define AUTO_FILL_EMAIL_INTERVAL 1
+#define AUTO_FILL_MAX_EMAILS 1
+
+#define HIGH_VOLTAGE_ALARM_VALUE 14.65 //BAS: OK for a LiFePO4?
+#define HIGH_VOLTAGE_ALARM_CODE 353
+#define HIGH_VOLTAGE_EMAIL_INTERVAL 10 // In MINUTES
+#define HIGH_VOLTAGE_MAX_EMAILS 5
+
+#define LOW_VOLTAGE_ALARM_VALUE 13.0 //BAS: OK for a LiFePO4?
+#define LOW_VOLTAGE_ALARM_CODE 1 // Not a very important alarm
+#define LOW_VOLTAGE_EMAIL_INTERVAL 240 // In MINUTES (4 hours)
+#define LOW_VOLTAGE_MAX_EMAILS 5
+
+#define LOW_PH_ALARM_VALUE 5.5 // not urgent, per Fran
+#define HIGH_PH_ALARM_VALUE 6.5
+#define PH_ALARM_CODE 1
+#define PH_ALARM_EMAIL_INTERVAL 360 // not urgent, per Fran (6 hours)
+#define PH_MAX_EMAILS 5
+
+#define LOW_WATER_ALARM_VALUE 14.0 // not urgent
+#define LOW_WATER_ALARM_CODE 1
+#define LOW_WATER_EMAIL_INTERVAL 360
+#define LOW_WATER_MAX_EMAILS 5
+
+#define HIGH_WATER_ALARM_VALUE 20.5 // tub c/b overflowing, stuck pump switch
+#define HIGH_WATER_ALARM_CODE 333 
+#define HIGH_WATER_EMAIL_INTERVAL 10
+#define HIGH_WATER_MAX_EMAILS 5
 
 #endif // #ifndef _CONFIG_H_

@@ -18,24 +18,27 @@ private:
     int8_t preamble_ = 4;
 
 public:
-    enum {
-        LOW_WATER_FLOAT,
-        HIGH_WATER_FLOAT
-    };
 
-    // Constructor for the transmitter. pin is the "power pin" for the LoRa radio.
-    ReyaxLoRa(uint8_t pin)
-        : pin_{pin}
+    /**
+     * @brief Construct a new Reyax Lo Ra object.
+     * For a small-battery powered transmitter, provide the pin number
+     * of the pin that will be used to power the LoRa on and off.
+     * 
+     * For any project that's not power-sensitive, don't provide the pin
+     * number, so the pin will default to 0.
+     * 
+     * @param pin Pin number that will be used to turn the LoRa on / off (if applicable).
+     */
+    ReyaxLoRa(uint8_t pin) : pin_{pin}
     {}
 
     // Constructor for the receiver (no pin to turn it on/off - it's always powered on)
-    ReyaxLoRa()
+    ReyaxLoRa() : ReyaxLoRa(0)
     {}
 
     /**
      * @brief - initialize() sends power to the LoRa radio if pin_ has been set
-     * to something other than 0 in the constructor (which should be done ONLY
-     * for a transmitter - the receiver's radio is always powered on), then it
+     * to something other than 0 in the constructor, then it
      * starts Serial2, then it wakes up the radio.
      */
 
@@ -85,7 +88,7 @@ public:
 
     /**
      * @brief set_frequency() is used only to change the default
-     * frequency of 915000000 
+     * frequency of 915000000, which is what has to be used in the USA
      */
 
     void set_frequency(int64_t freq) {
@@ -94,7 +97,7 @@ public:
 
     /**
      * @brief set_output_power() is used only to change the default
-     * of 15
+     * of 15, which is the highest, so don't change it
      */
     
     void set_output_power(int8_t power) {
@@ -135,7 +138,7 @@ public:
      * @brief set_coding_rate() is used only to change the default
      * of 1. A higher coding rate will not increase range, but will make a link more reliable,
      * and will slow down the transmission.
-     * Values are 1 - 4.
+     * Values are 1 - 4. (Representing 4/5, 4/6, 4/7, and 4/8, I THINK)
      */
 
     void set_coding_rate(int8_t rate) {
@@ -186,47 +189,91 @@ public:
         read_reply(delay_ms);
     }
 
+    /**
+     * @brief Generate a data payload and send it from a transmitter to the base station
+     */
+
+    void generate_and_send_payload(String value_name, String value_str, uint16_t alarm_code, uint16_t email_threshold, uint16_t max_emails) {
+        String data_str = String(TRANSMITTER_NAME + "%" + value_name + "%" + value_str + "%" + alarm_code
+                          + "%" + email_threshold + "%" + max_emails);
+        uint8_t data_length = data_str.length();
+        String payload = "AT+SEND=" + String(LORA_BASE_STATION_ADDRESS) + "," // BAS: test that the LORA_BASE_STATION_ADDRESS is sent as a String
+                         + String(data_length) + "," + data_str;
+        send_and_read_reply(payload, 500);
+    }
+
      /**
      * @brief Sends voltage data from a transmitter to the base station
      * 
      * @param voltage 
      */
 
-    void send_voltage_data(float voltage) {
-        String volt_str = String(voltage, 2); // makes voltage always have two decimal places
+    void send_voltage_data(float value) {
+        String value_str = String(value, 2); // makes voltage always have two decimal places
         uint16_t alarm_code = 0;
-        if (voltage < VOLTAGE_ALARM_RANGE_LOWER || voltage > VOLTAGE_ALARM_RANGE_UPPER) {
-            alarm_code = VOLTAGE_ALARM_CODE;
+        uint16_t email_interval = 1;
+        uint16_t max_emails = 1;
+        if (value < LOW_VOLTAGE_ALARM_VALUE) {
+            alarm_code = (uint16_t)LOW_VOLTAGE_ALARM_CODE;
+            email_interval = (uint16_t)LOW_VOLTAGE_EMAIL_INTERVAL;
+            max_emails = (uint16_t)LOW_VOLTAGE_MAX_EMAILS;
         }
-        uint16_t address = LORA_BASE_STATION_ADDRESS;
-        String data_str = String(TRANSMITTER_NAME + "%Voltage%" + volt_str + "%" + alarm_code + "%" + VOLTAGE_ALARM_EMAIL_THRESHOLD);
-        uint8_t data_length = data_str.length();
-        String payload = "AT+SEND=" + String(address) + ","
-                         + String(data_length) + "," 
-                         + data_str;
-        send_and_read_reply(payload, 500);
+        else if (value > HIGH_VOLTAGE_ALARM_VALUE) {
+            alarm_code = (uint16_t)HIGH_VOLTAGE_ALARM_CODE;
+            email_interval = (uint16_t)HIGH_VOLTAGE_EMAIL_INTERVAL;
+            max_emails = (uint16_t)HIGH_VOLTAGE_MAX_EMAILS;
+        }
+        generate_and_send_payload("Voltage", value_str, alarm_code, email_interval, max_emails);
     }
 
     /**
      * @brief Sends a packet with the pH value of the water
      */
 
-    void send_pH_data(float pH) {
-        String pH_str = String(pH, 1); // makes pH always have one decimal place
+    void send_pH_data(float value) {
+        String value_str = String(value, 1); // makes pH always have one decimal place
         uint16_t alarm_code = 0;
-        if (pH < PH_ALARM_RANGE_LOWER || pH > PH_ALARM_RANGE_UPPER) {
-            alarm_code = PH_ALARM_CODE;
+        uint16_t email_interval = (uint16_t)PH_ALARM_EMAIL_INTERVAL;
+        uint16_t max_emails = (uint16_t)PH_MAX_EMAILS;
+        if (value < LOW_PH_ALARM_VALUE || value > HIGH_PH_ALARM_VALUE) {
+            alarm_code = (uint16_t)PH_ALARM_CODE;            
         }
-        uint16_t address = LORA_BASE_STATION_ADDRESS;
-        String data_str = String(TRANSMITTER_NAME + "%pH%" + pH_str + "%" + alarm_code + "%" + PH_ALARM_EMAIL_THRESHOLD);
-        uint8_t data_length = data_str.length();
-        String payload = "AT+SEND=" + String(address) + ","
-                         + String(data_length) + "," 
-                         + data_str;
-        send_and_read_reply(payload, 500);
-    }    
+        generate_and_send_payload("pH", value_str, alarm_code, email_interval, max_emails);
+    }
 
-    void turn_off() {
+    /**
+     * @brief Generate the water volume data string to send to the base station 
+     */
+
+    void send_water_volume_data(float value) {
+        String value_str = String(value, 1); // makes water volume always have one decimal place
+        uint16_t alarm_code = 0;
+        uint16_t email_interval = 1;
+        uint16_t max_emails = 1;
+        if (value < LOW_WATER_ALARM_VALUE) {
+            alarm_code = (uint16_t)LOW_WATER_ALARM_CODE;
+            email_interval = (uint16_t)LOW_WATER_EMAIL_INTERVAL;
+            max_emails = (uint16_t)LOW_WATER_MAX_EMAILS;
+        }
+        else if (value > HIGH_WATER_ALARM_VALUE) {
+            alarm_code = (uint16_t)HIGH_WATER_ALARM_CODE;
+            email_interval = (uint16_t)HIGH_WATER_EMAIL_INTERVAL;
+            max_emails = (uint16_t)HIGH_WATER_MAX_EMAILS;
+        }
+        generate_and_send_payload("Water level", value_str, alarm_code, email_interval, max_emails);
+    }
+
+    /**
+     * @brief Generate the data about the last auto-fill to send to the base station 
+     */
+
+    void send_auto_fill_data(float value) {
+        String value_str = String(value, 1); // makes water fill volume always have one decimal place
+        uint16_t alarm_code = (uint16_t)AUTO_FILL_ALARM_CODE;
+        generate_and_send_payload("Auto-fill", value_str, alarm_code, (uint16_t)AUTO_FILL_EMAIL_INTERVAL, (uint16_t)AUTO_FILL_MAX_EMAILS);
+    }
+
+    void turn_off() { // Used for transmitters that run on small batteries, where LoRa is turned off during sleep
         digitalWrite(pin_, LOW);
     }
 
