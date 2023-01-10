@@ -66,6 +66,12 @@ void setup() {
   lora.one_time_setup();
 #endif
 
+  // Add the appropriate "set" method(s) here to change most of
+  // the LoRa parameters, if desired.
+  // EXAMPLE: lora->set_output_power(10);
+  lora.set_bandwidth(9);
+  lora.set_coding_rate(4);
+
   measure_things_this_run = !measure_things_this_run; // to make it different each time it wakes up
   elapsedMillis timer = 0;
   digitalWrite(circ_pump_pin, HIGH);
