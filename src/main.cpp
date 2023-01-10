@@ -67,10 +67,10 @@ void setup() {
 #endif
 
   // Add the appropriate "set" method(s) here to change most of
-  // the LoRa parameters, if desired.
+  // the LoRa parameters, if desired. If you do, use the appropriate 
+  // AT command to display the result of the change, to make sure it changed. 
   // EXAMPLE: lora->set_output_power(10);
-  lora.set_bandwidth(9);
-  lora.set_coding_rate(4);
+  //          lora->send_and_reply("AT+CRFOP?");;
 
   measure_things_this_run = !measure_things_this_run; // to make it different each time it wakes up
   elapsedMillis timer = 0;

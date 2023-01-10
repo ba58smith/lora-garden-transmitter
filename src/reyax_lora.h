@@ -58,8 +58,10 @@ public:
         // Wake up the LoRa and show the responses in the Serial Monitor
         send_and_read_reply("AT");
         send_and_read_reply("AT+VER?");
+        send_and_read_reply("AT+PARAMETER=9,7,1,4"); // SF, BW, CR, Preamble
         send_and_read_reply("AT+NETWORKID?");
         send_and_read_reply("AT+ADDRESS?");
+        send_and_read_reply("AT+PARAMETER?");
     }
 
     
