@@ -12,7 +12,7 @@ private:
 
 public:
     // Constructor for the pH sensor instance. 
-    WaterVolumeSensor(uint8_t pin) : analog_reader_ (data_pin_), data_pin_{pin} 
+    WaterVolumeSensor(uint8_t pin) : data_pin_{pin}, analog_reader_(data_pin_) 
     {}
 
     /**
@@ -23,12 +23,16 @@ public:
      * the voltage out, and knowing the value of the other resistor, you know the
      * resistance of the sensor, and that can be converted to the water level, which
      * can be converted to the water volume.
+     * 
+     * However, it's just as simple to convert the measured voltage to gallons, w/o converting to ohms,
+     * then inches, then gallons - which is what I did.
      */
     float reported_water_volume() {
-        float measured_voltage = analog_reader_.read_avg_mV() * 1000;
-        float measured_R1_ohms = analog_reader_.calculated_R1_value(measured_voltage);
-        float measured_inches = measured_R1_ohms / ETAPE_OHMS_PER_INCH;
-        return (measured_inches * TUB_GALLONS_PER_INCH) + GALLONS_BELOW_ETAPE;
+        float measured_voltage = analog_reader_.read_avg_mV(100, 25) / 1000;
+        //Serial.println("Water volume voltage: " + (String)measured_voltage);
+        float calculated_gallons = ((measured_voltage - LOWEST_MEASURED_VOLTAGE) / VOLTS_PER_GALLON) + LOWEST_MEASURED_GALLONS;
+        Serial.println("Calculated volume: " + String(calculated_gallons, 1));
+        return calculated_gallons;
     }
 
     /**

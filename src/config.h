@@ -17,32 +17,30 @@
 // Configure each of the variables below for each transmitter
 
 String TRANSMITTER_NAME = "Garden";
-#define TIME_TO_SLEEP 300 // 5 minutes
+#define TIME_TO_SLEEP 5 // 5 minutes //BAS: change back to 300 (5 minutes) after testing
 #define LORA_NODE_ADDRESS 2205UL // Bessie=2201, Boat=2202, Test=2203, Pool=2204, Garden=2205
-// Measured values of the two voltage divider resistors BAS: calculate and measure these
-#define R1_VALUE 9400.0 //BAS: change these to actual measured values
-#define R2_VALUE 2144.0
+#define R1_VALUE 100500.0 // actual measured value
+#define R2_VALUE 22040.0  // ditto
 // This will be different for each transmitter device, and must be calculated from actual
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
 // at normal battery voltage for known input voltage.
-#define VOLTAGE_CALIBRATION 1.038  // BAS: to do
+#define VOLTAGE_CALIBRATION 0.9972  // Calculated 1/15/2023
 
-#define ETAPE_R2_OHMS 1595.0 // measured ohms value of black-white pins on eTape
-#define ETAPE_VIN 3.3 // Voltage from ESP32 provided to the Vin pin on eTape
-#define GALLONS_BELOW_ETAPE 5.0 // BAS: measure this
-#define ETAPE_OHMS_PER_INCH 150 // Per the eTape datasheet
-#define TUB_GALLONS_PER_INCH 0.90 // Measuring the TOP of the range, where the tub is wider //BAS: measure this
+#define LOWEST_MEASURED_GALLONS 5.5 // where the eTape starts to give valid readings
+#define LOWEST_MEASURED_VOLTAGE 1.73 // volts measured at 1.5" (5.5 gallons)
+#define VOLTS_PER_GALLON 0.065 // in the range from 8 gallons to 17.4 gallons (the relevant range)
+#define REFILL_VOLUME 17.0 // stop refilling when it's this full
 #define GALLONS_PER_MINUTE 1.30 // How many gallons per minute the fill_pump moves //BAS: measure this
 #define AUTO_FILL_ALARM_CODE 1
 #define AUTO_FILL_EMAIL_INTERVAL 1
 #define AUTO_FILL_MAX_EMAILS 1
 
-#define HIGH_VOLTAGE_ALARM_VALUE 14.65 //BAS: OK for a LiFePO4?
+#define HIGH_VOLTAGE_ALARM_VALUE 14.65 //s/n/b more than 14.65 for a LiFePO4
 #define HIGH_VOLTAGE_ALARM_CODE 353
 #define HIGH_VOLTAGE_EMAIL_INTERVAL 10 // In MINUTES
 #define HIGH_VOLTAGE_MAX_EMAILS 5
 
-#define LOW_VOLTAGE_ALARM_VALUE 13.0 //BAS: OK for a LiFePO4?
+#define LOW_VOLTAGE_ALARM_VALUE 13.0 // 13.0 is about 30% for a LiFePO4?
 #define LOW_VOLTAGE_ALARM_CODE 1 // Not a very important alarm
 #define LOW_VOLTAGE_EMAIL_INTERVAL 240 // In MINUTES (4 hours)
 #define LOW_VOLTAGE_MAX_EMAILS 5

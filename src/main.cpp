@@ -47,13 +47,14 @@ void IRAM_ATTR cancel_auto_fill_isr() {
 RTC_DATA_ATTR static bool measure_things_this_run = false;
 
 ReyaxLoRa lora(0);
-VoltageSensor voltage_sensor(voltage_measurement_pin);
+//VoltageSensor voltage_sensor(voltage_measurement_pin); // BAS: have to make voltage sensor work for ADC2, to work with GPIO13
 pHSensor pH_sensor(pH_pin);
 WaterVolumeSensor water_volume_sensor(water_volume_pin);
 
 void setup() {  
   Serial.begin(115200);
   lora.initialize();
+  delay(1000); // cuts off Serial Monitor output w/o this
   pinMode(voltage_measurement_pin, INPUT);
   pinMode(fill_pump_pin, OUTPUT);
   pinMode(circ_pump_pin, OUTPUT);
@@ -73,35 +74,55 @@ void setup() {
   //          lora->send_and_reply("AT+CRFOP?");;
 
   measure_things_this_run = !measure_things_this_run; // to make it different each time it wakes up
+  delay(1000); // Serial.monitor needs a few seconds to get ready
+  Serial.println("measure_things_this_run = " + (String)measure_things_this_run);
   elapsedMillis timer = 0;
+  Serial.println("Circ pump starting");
   digitalWrite(circ_pump_pin, HIGH);
-  while (timer < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
+  while (timer < (1 * 3 * 1000)) {} // (20 seconds for testing) run the circulation pump for 3 minutes //BAS: change to 3 * 60 * 1000 after testing
+  Serial.println("Circ pump stopping");
   digitalWrite(circ_pump_pin, LOW);
 
   if (measure_things_this_run) { // measure all the things
 
+    /*
     // Send the battery voltage
-    lora.send_voltage_data(voltage_sensor.reported_voltage()); // BAS: s/ there be a short delay btwn lora.sends, maybe just 500 ms?
+    float voltage = voltage_sensor.reported_voltage();
+    Serial.println("Reported_voltage:" + (String)voltage);
+    lora.send_voltage_data(voltage);
+    delay(1000); // may not be necessary, but it can't hurt
+    */
 
     // Send the pH level from the pH sensor
-    lora.send_pH_data(pH_sensor.reported_pH());
+    float pH = pH_sensor.reported_pH();
+    Serial.println("Reported_pH:" + (String)pH);
+    lora.send_pH_data(pH);
+    delay(500);
 
     // Send the water level
-    lora.send_water_volume_data(water_volume_sensor.reported_water_volume());
+    float water_volume = water_volume_sensor.reported_water_volume();
+    Serial.println("Reported_water_volume:" + (String)water_volume);
+    lora.send_water_volume_data(water_volume);
 
     // fill tub if necessary, then send a packet about that
-    if (water_volume_sensor.reported_water_volume() <= 16.0) {
+    if (water_volume <= REFILL_VOLUME && digitalRead(hi_water_float_pin) == LOW) { // BAS: change to about 3 gallons less than FULL
       timer = 0;
+      Serial.println("Fill pump starting");
       digitalWrite(fill_pump_pin, HIGH);
-      while (water_volume_sensor.reported_water_volume() < 20.0 && !cancel_auto_fill) {
-        delay(5000);
+      while (water_volume_sensor.reported_water_volume() < REFILL_VOLUME && !cancel_auto_fill) {
+        delay(3000); // wait 3 seconds and check the level and the float again
       }
+      Serial.println("Fill pump stopping");
+      Serial.println("Auto-fill timer (ms): " + (String)timer);
+      float fill_volume = water_volume_sensor.reported_auto_fill_volume(timer);
+      Serial.println("Auto-fill volume: " + (String)fill_volume);
       digitalWrite(fill_pump_pin, LOW);
-      lora.send_auto_fill_data(water_volume_sensor.reported_auto_fill_volume(timer));
+      lora.send_auto_fill_data(fill_volume);
     }
   }
     // Give the last packet a couple seconds to go, then go to deep sleep for 5 minutes
     delay(2000);
+    Serial.println("Going to sleep now");
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     esp_deep_sleep_start();
 

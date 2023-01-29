@@ -106,8 +106,6 @@ public:
         output_power_ = power;
     }
 
-// BAS: change some of these to try to improve the connection. Too many failed attempts for some reason.
-
     /**
      * @brief set_spread_factor() is used only to change the default
      * of 12. Larger spreading factor improves sensitivity (reliability), slows transmission.
@@ -262,7 +260,7 @@ public:
             email_interval = (uint16_t)HIGH_WATER_EMAIL_INTERVAL;
             max_emails = (uint16_t)HIGH_WATER_MAX_EMAILS;
         }
-        generate_and_send_payload("Water level", value_str, alarm_code, email_interval, max_emails);
+        generate_and_send_payload("Wtr lvl", value_str, alarm_code, email_interval, max_emails);
     }
 
     /**
@@ -272,7 +270,7 @@ public:
     void send_auto_fill_data(float value) {
         String value_str = String(value, 1); // makes water fill volume always have one decimal place
         uint16_t alarm_code = (uint16_t)AUTO_FILL_ALARM_CODE;
-        generate_and_send_payload("Auto-fill", value_str, alarm_code, (uint16_t)AUTO_FILL_EMAIL_INTERVAL, (uint16_t)AUTO_FILL_MAX_EMAILS);
+        generate_and_send_payload("Fill", value_str, alarm_code, (uint16_t)AUTO_FILL_EMAIL_INTERVAL, (uint16_t)AUTO_FILL_MAX_EMAILS);
     }
 
     void turn_off() { // Used for transmitters that run on small batteries, where LoRa is turned off during sleep

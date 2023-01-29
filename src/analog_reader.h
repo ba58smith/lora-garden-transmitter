@@ -103,18 +103,6 @@ class ESP32AnalogReader {
     return measured_volts * (R1 + R2) / R2;
   }
 
-  /**
-   * @brief Returns the value of R1 (the variable resistor in the eTape liquid level sensor),
-   * with the known input voltage (3.3), the known value of R2 (ETAPE_R2_OHMS),
-   * and the measured voltage from the sensor.
-   * 
-   * @param v_out - The voltage measured on the sensor's data pin.
-   */
-
-  float calculated_R1_value(float v_out) {
-    return ETAPE_R2_OHMS * ((ETAPE_VIN / v_out) - 1.0);
-  }
-
   };
 
 
