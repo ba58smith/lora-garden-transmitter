@@ -197,8 +197,7 @@ public:
         String data_str = String(TRANSMITTER_NAME + "%" + value_name + "%" + value_str + "%" + alarm_code
                           + "%" + email_threshold + "%" + max_emails);
         uint8_t data_length = data_str.length();
-        String payload = "AT+SEND=" + String(LORA_BASE_STATION_ADDRESS) + "," // BAS: test that the LORA_BASE_STATION_ADDRESS is sent as a String
-                         + String(data_length) + "," + data_str;
+        String payload = "AT+SEND=" + String(LORA_BASE_STATION_ADDRESS) + "," + String(data_length) + "," + data_str;
         send_and_read_reply(payload, 500);
     }
 
@@ -267,10 +266,17 @@ public:
      * @brief Generate the data about the last auto-fill to send to the base station 
      */
 
-    void send_auto_fill_data(float value) {
+    void send_auto_fill_data(float value, String type) {
         String value_str = String(value, 1); // makes water fill volume always have one decimal place
         uint16_t alarm_code = (uint16_t)AUTO_FILL_ALARM_CODE;
-        generate_and_send_payload("Fill", value_str, alarm_code, (uint16_t)AUTO_FILL_EMAIL_INTERVAL, (uint16_t)AUTO_FILL_MAX_EMAILS);
+        uint16_t interval = (uint16_t)AUTO_FILL_EMAIL_INTERVAL;
+        uint16_t emails = (uint16_t)AUTO_FILL_MAX_EMAILS;
+        if (type != "Fill") {
+            alarm_code = (uint16_t)HIGH_WATER_ALARM_CODE;
+            interval = (uint16_t)HIGH_WATER_EMAIL_INTERVAL;
+            emails = (uint16_t)HIGH_WATER_MAX_EMAILS;
+        }
+        generate_and_send_payload(type, value_str, alarm_code, interval, emails);
     }
 
     void turn_off() { // Used for transmitters that run on small batteries, where LoRa is turned off during sleep

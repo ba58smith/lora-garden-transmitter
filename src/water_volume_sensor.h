@@ -28,10 +28,8 @@ public:
      * then inches, then gallons - which is what I did.
      */
     float reported_water_volume() {
-        float measured_voltage = analog_reader_.read_avg_mV(100, 25) / 1000;
-        //Serial.println("Water volume voltage: " + (String)measured_voltage);
+        float measured_voltage = analog_reader_.read_avg_mV(20, 50) / 1000;
         float calculated_gallons = ((measured_voltage - LOWEST_MEASURED_VOLTAGE) / VOLTS_PER_GALLON) + LOWEST_MEASURED_GALLONS;
-        Serial.println("Calculated volume: " + String(calculated_gallons, 1));
         return calculated_gallons;
     }
 
@@ -42,8 +40,8 @@ public:
      * @param fill_timer_ms - how long the fill pump ran 
      */
 
-    float reported_auto_fill_volume(uint64_t fill_timer_ms) {
-        return fill_timer_ms / 60000 * GALLONS_PER_MINUTE;
+    float reported_auto_fill_volume(float fill_timer_secs) {
+        return fill_timer_secs / 60 * REFILL_GALLONS_PER_MINUTE;
     }
 };
 

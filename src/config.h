@@ -17,7 +17,7 @@
 // Configure each of the variables below for each transmitter
 
 String TRANSMITTER_NAME = "Garden";
-#define TIME_TO_SLEEP 5 // 5 minutes //BAS: change back to 300 (5 minutes) after testing
+#define TIME_TO_SLEEP 300 // 300 is 5 minutes
 #define LORA_NODE_ADDRESS 2205UL // Bessie=2201, Boat=2202, Test=2203, Pool=2204, Garden=2205
 #define R1_VALUE 100500.0 // actual measured value
 #define R2_VALUE 22040.0  // ditto
@@ -29,8 +29,10 @@ String TRANSMITTER_NAME = "Garden";
 #define LOWEST_MEASURED_GALLONS 5.5 // where the eTape starts to give valid readings
 #define LOWEST_MEASURED_VOLTAGE 1.73 // volts measured at 1.5" (5.5 gallons)
 #define VOLTS_PER_GALLON 0.065 // in the range from 8 gallons to 17.4 gallons (the relevant range)
-#define REFILL_VOLUME 17.0 // stop refilling when it's this full
-#define GALLONS_PER_MINUTE 1.30 // How many gallons per minute the fill_pump moves //BAS: measure this
+#define REFILL_START_VOLUME 14.0 // start refilling when it's less than this
+#define REFILL_STOP_VOLUME 17.0 // stop refilling when it's this full
+#define REFILL_GALLONS_PER_MINUTE 1.30 // How many gallons per minute the fill_pump moves //BAS: measure this
+#define AUTO_FILL_CUT_OFF_SECONDS 180.0 // s/b 180 (3 minutes)
 #define AUTO_FILL_ALARM_CODE 1
 #define AUTO_FILL_EMAIL_INTERVAL 1
 #define AUTO_FILL_MAX_EMAILS 1
@@ -50,15 +52,18 @@ String TRANSMITTER_NAME = "Garden";
 #define PH_ALARM_CODE 1
 #define PH_ALARM_EMAIL_INTERVAL 360 // not urgent, per Fran (6 hours)
 #define PH_MAX_EMAILS 5
+#define PH_LOW_CAL_VOLTAGE_MV 2068.1 // avg millivolts in 4.00 pH calibration solution
+#define PH_MID_CAL_VOLTAGE_MV 1563.6 // avg millivolts in 7.00 pH calibration solution
+#define PH_HI_CAL_VOLTAGE_MV 1051.4 // avg millivolts in 10.00 pH calibration solution
 
-#define LOW_WATER_ALARM_VALUE 14.0 // not urgent
+#define LOW_WATER_ALARM_VALUE 13.0 // not urgent (Auto-refill s/h happened at 14.0)
 #define LOW_WATER_ALARM_CODE 1
-#define LOW_WATER_EMAIL_INTERVAL 360
+#define LOW_WATER_EMAIL_INTERVAL 360 // in minutes (6 hours)
 #define LOW_WATER_MAX_EMAILS 5
 
-#define HIGH_WATER_ALARM_VALUE 20.5 // tub c/b overflowing, stuck pump switch
+#define HIGH_WATER_ALARM_VALUE 17.5 // tub c/b overflowing, stuck pump switch
 #define HIGH_WATER_ALARM_CODE 333 
-#define HIGH_WATER_EMAIL_INTERVAL 10
+#define HIGH_WATER_EMAIL_INTERVAL 30 // in minutes
 #define HIGH_WATER_MAX_EMAILS 5
 
 #endif // #ifndef _CONFIG_H_

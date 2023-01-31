@@ -25,7 +25,7 @@ Tower Garden functions: operates the circulation pump and fill pump
  */
 //#define LORA_SETUP_REQUIRED
 
-uint8_t voltage_measurement_pin = 13;
+uint8_t voltage_measurement_pin = 13; //BAS: "hot-wire" from pin 13 to 39 ("VN") or 36 ("VP")
 uint8_t fill_pump_pin = 22;
 uint8_t circ_pump_pin = 23;
 uint8_t water_volume_pin = 32;
@@ -45,6 +45,12 @@ void IRAM_ATTR cancel_auto_fill_isr() {
  * maintains its value when ESP32 goes into deep sleep.
  */
 RTC_DATA_ATTR static bool measure_things_this_run = false;
+
+/** Variable to record the fact that the auto-fill pump ran for
+ * more than AUTO_FILL_CUT_OFF_TIME, so we don't keep running the
+ * auto-fill every time. 
+ */
+RTC_DATA_ATTR static bool auto_fill_timed_out = false;
 
 ReyaxLoRa lora(0);
 //VoltageSensor voltage_sensor(voltage_measurement_pin); // BAS: have to make voltage sensor work for ADC2, to work with GPIO13
@@ -76,10 +82,10 @@ void setup() {
   measure_things_this_run = !measure_things_this_run; // to make it different each time it wakes up
   delay(1000); // Serial.monitor needs a few seconds to get ready
   Serial.println("measure_things_this_run = " + (String)measure_things_this_run);
-  elapsedMillis timer = 0;
+  elapsedMillis timer_ms = 0;
   Serial.println("Circ pump starting");
   digitalWrite(circ_pump_pin, HIGH);
-  while (timer < (1 * 3 * 1000)) {} // (20 seconds for testing) run the circulation pump for 3 minutes //BAS: change to 3 * 60 * 1000 after testing
+  while (timer_ms < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
   Serial.println("Circ pump stopping");
   digitalWrite(circ_pump_pin, LOW);
 
@@ -95,7 +101,7 @@ void setup() {
 
     // Send the pH level from the pH sensor
     float pH = pH_sensor.reported_pH();
-    Serial.println("Reported_pH:" + (String)pH);
+    Serial.println("Reported_pH: " + String(pH, 1));
     lora.send_pH_data(pH);
     delay(500);
 
@@ -105,19 +111,36 @@ void setup() {
     lora.send_water_volume_data(water_volume);
 
     // fill tub if necessary, then send a packet about that
-    if (water_volume <= REFILL_VOLUME && digitalRead(hi_water_float_pin) == LOW) { // BAS: change to about 3 gallons less than FULL
-      timer = 0;
-      Serial.println("Fill pump starting");
-      digitalWrite(fill_pump_pin, HIGH);
-      while (water_volume_sensor.reported_water_volume() < REFILL_VOLUME && !cancel_auto_fill) {
-        delay(3000); // wait 3 seconds and check the level and the float again
+    if (!auto_fill_timed_out) {
+      if (water_volume <= REFILL_START_VOLUME && digitalRead(hi_water_float_pin) == LOW && !auto_fill_timed_out) {
+        float stop_time_secs = 0.0;
+        String stop_reason;
+        timer_ms = 0;
+        Serial.println("Fill pump starting");
+        digitalWrite(fill_pump_pin, HIGH);
+        while (water_volume_sensor.reported_water_volume() < REFILL_STOP_VOLUME && !cancel_auto_fill
+               && timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
+        }
+        stop_time_secs = (float)timer_ms / 1000.0;
+        if (stop_time_secs >= AUTO_FILL_CUT_OFF_SECONDS) {
+          auto_fill_timed_out = true;
+          stop_reason = "TIMER";
+        }
+        else {
+          if (cancel_auto_fill) {
+            stop_reason = "FL-SW";
+          }
+          else {
+            stop_reason = "Fill";
+          }
+        }
+        Serial.println("Fill pump stopping: " + stop_reason);
+        Serial.println("Auto-fill timer (sec): " + (String)stop_time_secs);
+        float fill_volume = water_volume_sensor.reported_auto_fill_volume(stop_time_secs);
+        Serial.println("Auto-fill volume: " + (String)fill_volume);
+        digitalWrite(fill_pump_pin, LOW);
+        lora.send_auto_fill_data(fill_volume, stop_reason);
       }
-      Serial.println("Fill pump stopping");
-      Serial.println("Auto-fill timer (ms): " + (String)timer);
-      float fill_volume = water_volume_sensor.reported_auto_fill_volume(timer);
-      Serial.println("Auto-fill volume: " + (String)fill_volume);
-      digitalWrite(fill_pump_pin, LOW);
-      lora.send_auto_fill_data(fill_volume);
     }
   }
     // Give the last packet a couple seconds to go, then go to deep sleep for 5 minutes
