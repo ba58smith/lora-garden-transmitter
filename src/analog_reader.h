@@ -7,8 +7,8 @@
 
 /**
  * @brief ESP32AnalogReader does all of the calibration of the ESP32's ADC, using the
- * Vref of the specific chip. If you don't do this, the values from analogRead() are
- * all over the place!
+ * Vref of the specific chip. If you don't do this, the values from reading the analog
+ * pins are very non-linear.
  * 
  * Use this class in any sensor that gets its value by reading analog input.
  * 
@@ -17,7 +17,12 @@
  * to determine the value of R1 in a voltage divider, when R2 and the input and output
  * voltages are known.
  * 
- * Much of this was copied from SensESP - thanks, @mairas!
+ * You should be able to use GPIO pins 32 - 39: they are all on ADC1. If your project
+ * does not use WiFi, you should be able to use pins 13, 25, 26, and 27: they are on
+ * ADC2, and WiFi also uses ADC2. Other pins on ADC2 have various other jobs and are
+ * likely to cause problems if you use them.
+ * 
+ * Based on code from SensESP - thanks, @mairas!
  */
 
 class ESP32AnalogReader {
@@ -27,49 +32,83 @@ class ESP32AnalogReader {
   adc_bits_width_t bit_width_ = ADC_WIDTH_BIT_12;
   // maximum voltage readout for 3.3V VDDA when attenuation_ is set to 11 dB
   const float kVmax_ = 3300;
-  int8_t adc_channel_;
+  adc_channel_t adc_channel_;
   esp_adc_cal_characteristics_t adc_characteristics_;
   const int kVref_ = 1100;  // voltage reference, in mV
+  adc_unit_t unit; // ADC1 or ADC2
+  bool calibration_successful = false;
+  bool adc1_config_width_failed = false;
+  bool adc1_config_channel_atten_failed = false;
+  bool adc2_config_channel_atten_failed = false;
 
  public:
   ESP32AnalogReader(uint8_t pin) : analog_read_pin_{pin} {
-    if (!(32 <= analog_read_pin_ && analog_read_pin_ <= 39)) {
-      Serial.println("Only ADC1 is supported at the moment");
-      adc_channel_ = -1;
-      return;
+    if (32 <= analog_read_pin_ && analog_read_pin_ <= 39) {
+      unit = ADC_UNIT_1;
+      adc_channel_ = (adc_channel_t)digitalPinToAnalogChannel(analog_read_pin_);
     }
-    adc_channel_ = digitalPinToAnalogChannel(analog_read_pin_);
-    calibrate();
+    else {
+      unit = ADC_UNIT_2;
+      if (analog_read_pin_ == 13) adc_channel_ = ADC_CHANNEL_4;
+      else if (analog_read_pin_ == 25) adc_channel_ = ADC_CHANNEL_8;
+      else if (analog_read_pin_ == 26) adc_channel_ = ADC_CHANNEL_9;
+      else if (analog_read_pin_ == 27) adc_channel_ = ADC_CHANNEL_7;
+    }
+    
+    if (!calibrate()) {
+      calibration_successful = false;
+    }
   }
 
   /**
    * @brief Calibrate the ADC for this specific ESP32
    * 
-   * @return false for an invalid pin, otherwise true
+   * @return false if any of the configuration functions fail, otherwise true
    */
 
   bool calibrate() {
-    if (adc_channel_ == -1) {
-      return false;
+    if (unit == ADC_UNIT_1) {
+        if (adc1_config_width(bit_width_) != ESP_OK) {
+          adc1_config_width_failed = true;
+          return false;
+        }
+        if (adc1_config_channel_atten((adc1_channel_t)adc_channel_, attenuation_) != ESP_OK) {
+          adc1_config_channel_atten_failed = true;
+          return false;
+        }
+    } else {
+        if (adc2_config_channel_atten((adc2_channel_t)adc_channel_, attenuation_) != ESP_OK) {
+          adc2_config_channel_atten_failed = true;
+          return false;
+        }
     }
-    adc1_config_width(bit_width_);
-    adc1_config_channel_atten((adc1_channel_t)adc_channel_, attenuation_);
-    esp_adc_cal_characterize(ADC_UNIT_1, attenuation_, bit_width_, kVref_,
+    esp_adc_cal_characterize(unit, attenuation_, bit_width_, kVref_,
                              &adc_characteristics_);
     return true;
   }
 
   /**
-   * @brief Reads the voltage on the voltage_pin, in mV, one time only. 
+   * @brief Reads the voltage on the analog_read_pin_, in mV, one time only. 
    * 
-   * @return float - voltage in mV.
+   * @return int - voltage in mV.
    */
   
-  float read_mV() {
-    uint32_t voltage_in_mV;
-    esp_adc_cal_get_voltage((adc_channel_t)adc_channel_, &adc_characteristics_,
-                            &voltage_in_mV); 
-    return voltage_in_mV;
+  int read_mV() {
+    int raw;
+    uint32_t volts_mV;
+    if (unit == ADC_UNIT_1) {
+      // returns the raw value of an adc1_channel_t and assigns it to raw
+      esp_adc_cal_get_voltage(adc_channel_, &adc_characteristics_,
+                            &volts_mV);
+      return volts_mV;
+    } 
+    else { // ADC_UNIT_2
+      // puts the raw value of an adc2_channel_t into raw
+      adc2_get_raw((adc2_channel_t)adc_channel_, bit_width_, &raw);
+      // Convert raw adc reading to mV
+      volts_mV = esp_adc_cal_raw_to_voltage(raw, &adc_characteristics_);
+      return volts_mV; // 
+    }
   }
 
   /**

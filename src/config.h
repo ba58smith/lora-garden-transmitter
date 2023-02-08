@@ -24,7 +24,7 @@ String TRANSMITTER_NAME = "Garden";
 // This will be different for each transmitter device, and must be calculated from actual
 // measurements taken of the source voltage, to get the final voltage correct. Calibrate
 // at normal battery voltage for known input voltage.
-#define VOLTAGE_CALIBRATION 0.9972  // Calculated 1/15/2023
+#define VOLTAGE_CALIBRATION 0.98  // Calculated 2/8/2023
 
 #define LOWEST_MEASURED_GALLONS 5.5 // where the eTape starts to give valid readings
 #define LOWEST_MEASURED_VOLTAGE 1.73 // volts measured at 1.5" (5.5 gallons)

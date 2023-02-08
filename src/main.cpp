@@ -25,7 +25,7 @@ Tower Garden functions: operates the circulation pump and fill pump
  */
 //#define LORA_SETUP_REQUIRED
 
-uint8_t voltage_measurement_pin = 13; //BAS: "hot-wire" from pin 13 to 39 ("VN") or 36 ("VP")
+uint8_t voltage_measurement_pin = 13;
 uint8_t fill_pump_pin = 22;
 uint8_t circ_pump_pin = 23;
 uint8_t water_volume_pin = 32;
@@ -53,7 +53,7 @@ RTC_DATA_ATTR static bool measure_things_this_run = false;
 RTC_DATA_ATTR static bool auto_fill_timed_out = false;
 
 ReyaxLoRa lora(0);
-//VoltageSensor voltage_sensor(voltage_measurement_pin); // BAS: have to make voltage sensor work for ADC2, to work with GPIO13
+VoltageSensor voltage_sensor(voltage_measurement_pin);
 pHSensor pH_sensor(pH_pin);
 WaterVolumeSensor water_volume_sensor(water_volume_pin);
 
@@ -85,19 +85,18 @@ void setup() {
   elapsedMillis timer_ms = 0;
   Serial.println("Circ pump starting");
   digitalWrite(circ_pump_pin, HIGH);
+  //while (timer_ms < (5 * 1000)) {} // BAS: testing only
   while (timer_ms < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
   Serial.println("Circ pump stopping");
   digitalWrite(circ_pump_pin, LOW);
 
   if (measure_things_this_run) { // measure all the things
 
-    /*
     // Send the battery voltage
     float voltage = voltage_sensor.reported_voltage();
     Serial.println("Reported_voltage:" + (String)voltage);
     lora.send_voltage_data(voltage);
     delay(1000); // may not be necessary, but it can't hurt
-    */
 
     // Send the pH level from the pH sensor
     float pH = pH_sensor.reported_pH();
