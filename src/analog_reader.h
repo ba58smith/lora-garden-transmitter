@@ -94,15 +94,15 @@ class ESP32AnalogReader {
    */
   
   int read_mV() {
-    int raw;
     uint32_t volts_mV;
     if (unit == ADC_UNIT_1) {
-      // returns the raw value of an adc1_channel_t and assigns it to raw
+      // returns the raw value of an adc1_channel_t and assigns it to volts_mV
       esp_adc_cal_get_voltage(adc_channel_, &adc_characteristics_,
                             &volts_mV);
       return volts_mV;
     } 
     else { // ADC_UNIT_2
+      int raw;
       // puts the raw value of an adc2_channel_t into raw
       adc2_get_raw((adc2_channel_t)adc_channel_, bit_width_, &raw);
       // Convert raw adc reading to mV

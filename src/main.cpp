@@ -32,12 +32,12 @@ uint8_t water_volume_pin = 32;
 uint8_t pH_pin = 33;
 uint8_t hi_water_float_pin = 34;
 //uint8_t low_water_float_pin = 35; // c/b used to monitor a physical button that would wake up ESP32, and start an auto-fill (for Fran)
-bool cancel_auto_fill = false;
+bool float_sw_activated = false;
 
 // To stop the auto-fill with the float switch, as a fail-safe
 // Stored in IRAM (Internal RAM) for maximum speed of loading and execution
-void IRAM_ATTR cancel_auto_fill_isr() {
-  cancel_auto_fill = true;
+void IRAM_ATTR float_switch_isr() {
+  float_sw_activated = true;
 }
 
 /* Variable to determine what to do / not do during this run.
@@ -67,7 +67,7 @@ void setup() {
   pinMode(water_volume_pin, INPUT);
   pinMode(pH_pin, INPUT);
   pinMode(hi_water_float_pin, INPUT);
-  attachInterrupt(hi_water_float_pin, cancel_auto_fill_isr, RISING);
+  attachInterrupt(hi_water_float_pin, float_switch_isr, RISING);
 
 #ifdef LORA_SETUP_REQUIRED
   lora.one_time_setup();
@@ -82,6 +82,14 @@ void setup() {
   measure_things_this_run = !measure_things_this_run; // to make it different each time it wakes up
   delay(1000); // Serial.monitor needs a few seconds to get ready
   Serial.println("measure_things_this_run = " + (String)measure_things_this_run);
+
+  if (digitalRead(hi_water_float_pin) == HIGH) { // water is getting into the tub w/o the fill pump running
+    lora.send_auto_fill_data(0.00, "FL-SW");     // or the last auto-fill stopped w/ the float switch, and it has not been investigated
+  }
+  else {
+    float_sw_activated = false; // the pin is LOW, so the variable s/b false
+  }
+
   elapsedMillis timer_ms = 0;
   Serial.println("Circ pump starting");
   digitalWrite(circ_pump_pin, HIGH);
@@ -111,14 +119,15 @@ void setup() {
 
     // fill tub if necessary, then send a packet about that
     if (!auto_fill_timed_out) {
-      if (water_volume <= REFILL_START_VOLUME && digitalRead(hi_water_float_pin) == LOW && !auto_fill_timed_out) {
+      if (water_volume <= REFILL_START_VOLUME && digitalRead(hi_water_float_pin) == LOW) {
         float stop_time_secs = 0.0;
         String stop_reason;
         timer_ms = 0;
         Serial.println("Fill pump starting");
         digitalWrite(fill_pump_pin, HIGH);
-        while (water_volume_sensor.reported_water_volume() < REFILL_STOP_VOLUME && !cancel_auto_fill
+        while (!float_sw_activated && water_volume_sensor.reported_water_volume() < REFILL_STOP_VOLUME
                && timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
+              delay(3000); // fill for 3 more seconds, then check again
         }
         stop_time_secs = (float)timer_ms / 1000.0;
         if (stop_time_secs >= AUTO_FILL_CUT_OFF_SECONDS) {
@@ -126,7 +135,7 @@ void setup() {
           stop_reason = "TIMER";
         }
         else {
-          if (cancel_auto_fill) {
+          if (float_sw_activated) {
             stop_reason = "FL-SW";
           }
           else {

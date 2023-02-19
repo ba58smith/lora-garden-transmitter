@@ -29,26 +29,26 @@ String TRANSMITTER_NAME = "Garden";
 #define LOWEST_MEASURED_GALLONS 5.5 // where the eTape starts to give valid readings
 #define LOWEST_MEASURED_VOLTAGE 1.73 // volts measured at 1.5" (5.5 gallons)
 #define VOLTS_PER_GALLON 0.065 // in the range from 8 gallons to 17.4 gallons (the relevant range)
-#define REFILL_START_VOLUME 14.0 // start refilling when it's less than this
+#define REFILL_START_VOLUME 15.0 // start refilling when it's less than this
 #define REFILL_STOP_VOLUME 17.0 // stop refilling when it's this full
-#define REFILL_GALLONS_PER_MINUTE 1.30 // How many gallons per minute the fill_pump moves //BAS: measure this
+#define REFILL_GALLONS_PER_MINUTE 2.95 // How many gallons per minute the fill_pump moves //BAS: measure this
 #define AUTO_FILL_CUT_OFF_SECONDS 180.0 // s/b 180 (3 minutes)
 #define AUTO_FILL_ALARM_CODE 1
 #define AUTO_FILL_EMAIL_INTERVAL 1
 #define AUTO_FILL_MAX_EMAILS 1
 
-#define HIGH_VOLTAGE_ALARM_VALUE 14.65 //s/n/b more than 14.65 for a LiFePO4
+#define HIGH_VOLTAGE_ALARM_VALUE 14.55 //Victron solar controller is set to 14.5
 #define HIGH_VOLTAGE_ALARM_CODE 353
 #define HIGH_VOLTAGE_EMAIL_INTERVAL 10 // In MINUTES
 #define HIGH_VOLTAGE_MAX_EMAILS 5
 
-#define LOW_VOLTAGE_ALARM_VALUE 13.0 // 13.0 is about 30% for a LiFePO4?
+#define LOW_VOLTAGE_ALARM_VALUE 13.10 // 13.0 is about 30% for a LiFePO4 (but that's a rough estimate)
 #define LOW_VOLTAGE_ALARM_CODE 1 // Not a very important alarm
 #define LOW_VOLTAGE_EMAIL_INTERVAL 240 // In MINUTES (4 hours)
 #define LOW_VOLTAGE_MAX_EMAILS 5
 
 #define LOW_PH_ALARM_VALUE 5.5 // not urgent, per Fran
-#define HIGH_PH_ALARM_VALUE 6.5
+#define HIGH_PH_ALARM_VALUE 6.8
 #define PH_ALARM_CODE 1
 #define PH_ALARM_EMAIL_INTERVAL 360 // not urgent, per Fran (6 hours)
 #define PH_MAX_EMAILS 5
