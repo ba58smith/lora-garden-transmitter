@@ -11,7 +11,7 @@ private:
     ESP32AnalogReader analog_reader_;
 
 public:
-    // Constructor for the pH sensor instance. 
+    // Constructor for the water volume sensor instance. 
     WaterVolumeSensor(uint8_t pin) : data_pin_{pin}, analog_reader_(data_pin_) 
     {}
 
@@ -25,23 +25,12 @@ public:
      * can be converted to the water volume.
      * 
      * However, it's just as simple to convert the measured voltage to gallons, w/o converting to ohms,
-     * then inches, then gallons - which is what I did.
+     * then inches, then gallons, so this function takes the simpler approach.
      */
     float reported_water_volume() {
         float measured_voltage = analog_reader_.read_avg_mV(20, 50) / 1000;
         float calculated_gallons = ((measured_voltage - LOWEST_MEASURED_VOLTAGE) / VOLTS_PER_GALLON) + LOWEST_MEASURED_GALLONS;
         return calculated_gallons;
-    }
-
-    /**
-     * @brief Converts the time (in ms) of the running of the fill pump
-     * into gallons, to be reported to the base station.
-     * 
-     * @param fill_timer_ms - how long the fill pump ran 
-     */
-
-    float reported_auto_fill_volume(float fill_timer_secs) {
-        return fill_timer_secs / 60 * REFILL_GALLONS_PER_MINUTE;
     }
 };
 

@@ -127,7 +127,7 @@ void setup() {
         digitalWrite(fill_pump_pin, HIGH);
         while (!float_sw_activated && water_volume_sensor.reported_water_volume() < REFILL_STOP_VOLUME
                && timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
-              delay(3000); // fill for 3 more seconds, then check again
+              delay(1000); // fill a second, then check again
         }
         stop_time_secs = (float)timer_ms / 1000.0;
         if (stop_time_secs >= AUTO_FILL_CUT_OFF_SECONDS) {
@@ -144,7 +144,7 @@ void setup() {
         }
         Serial.println("Fill pump stopping: " + stop_reason);
         Serial.println("Auto-fill timer (sec): " + (String)stop_time_secs);
-        float fill_volume = water_volume_sensor.reported_auto_fill_volume(stop_time_secs);
+        float fill_volume = water_volume_sensor.reported_water_volume() - water_volume;
         Serial.println("Auto-fill volume: " + (String)fill_volume);
         digitalWrite(fill_pump_pin, LOW);
         lora.send_auto_fill_data(fill_volume, stop_reason);

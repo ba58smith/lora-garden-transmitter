@@ -269,14 +269,14 @@ public:
     void send_auto_fill_data(float value, String type) {
         String value_str = String(value, 1); // makes water fill volume always have one decimal place
         uint16_t alarm_code = (uint16_t)AUTO_FILL_ALARM_CODE;
-        uint16_t interval = (uint16_t)AUTO_FILL_EMAIL_INTERVAL;
-        uint16_t emails = (uint16_t)AUTO_FILL_MAX_EMAILS;
+        uint16_t email_interval = (uint16_t)AUTO_FILL_EMAIL_INTERVAL;
+        uint16_t max_emails = (uint16_t)AUTO_FILL_MAX_EMAILS;
         if (type != "Fill") {
             alarm_code = (uint16_t)HIGH_WATER_ALARM_CODE;
-            interval = (uint16_t)HIGH_WATER_EMAIL_INTERVAL;
-            emails = (uint16_t)HIGH_WATER_MAX_EMAILS;
+            email_interval = (uint16_t)HIGH_WATER_EMAIL_INTERVAL;
+            max_emails = (uint16_t)HIGH_WATER_MAX_EMAILS;
         }
-        generate_and_send_payload(type, value_str, alarm_code, interval, emails);
+        generate_and_send_payload(type, value_str, alarm_code, email_interval, max_emails);
     }
 
     void turn_off() { // Used for transmitters that run on small batteries, where LoRa is turned off during sleep
