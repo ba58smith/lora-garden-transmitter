@@ -30,6 +30,19 @@ public:
         return 7.0 - 3.0 / (PH_MID_CAL_VOLTAGE_MV - PH_HI_CAL_VOLTAGE_MV) * (measured_mV - PH_MID_CAL_VOLTAGE_MV);
       }
     }
+
+
+    /**
+     * @brief Measures the millivolts from the pH sensor 20 times and outputs the values to the serial monitor.
+     * Used only to calibrate the pH sensor. (It's normally commented out in main.cpp.)
+    */
+
+   void pH_calibration() {
+      for(uint8_t n = 0; n < 20; n++) {
+        Serial.println(analog_reader_.read_avg_mV(100, 10));
+      }  
+   }   
+  
 };
 
 #endif // _PH_SENSOR_H_

@@ -107,6 +107,7 @@ void setup() {
     delay(1000); // may not be necessary, but it can't hurt
 
     // Send the pH level from the pH sensor
+    // pH_sensor.pH_calibration(); // BAS: run only when you need to calibrate the pH sensor
     float pH = pH_sensor.reported_pH();
     Serial.println("Reported_pH: " + String(pH, 1));
     lora.send_pH_data(pH);
