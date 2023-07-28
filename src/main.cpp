@@ -84,6 +84,7 @@ void setup() {
   Serial.println("measure_things_this_run = " + (String)measure_things_this_run);
 
   if (digitalRead(hi_water_float_pin) == HIGH) { // water is getting into the tub w/o the fill pump running
+    float_sw_activated = true; // the pin is HIGH, so the variable s/b true
     lora.send_auto_fill_data(0.00, "FL-SW");     // or the last auto-fill stopped w/ the float switch, and it has not been investigated
   }
   else {
@@ -120,7 +121,7 @@ void setup() {
 
     // fill tub if necessary, then send a packet about that
     if (!auto_fill_timed_out) {
-      if (water_volume <= REFILL_START_VOLUME && digitalRead(hi_water_float_pin) == LOW) {
+      if (water_volume <= REFILL_START_VOLUME && !float_sw_activated) {
         float stop_time_secs = 0.0;
         String stop_reason;
         timer_ms = 0;
@@ -130,6 +131,7 @@ void setup() {
                && timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
               delay(1000); // fill a second, then check again
         }
+        digitalWrite(fill_pump_pin, LOW);
         stop_time_secs = (float)timer_ms / 1000.0;
         if (stop_time_secs >= AUTO_FILL_CUT_OFF_SECONDS) {
           auto_fill_timed_out = true;
@@ -143,11 +145,10 @@ void setup() {
             stop_reason = "Fill";
           }
         }
-        Serial.println("Fill pump stopping: " + stop_reason);
+        Serial.println("Fill pump stopped: " + stop_reason);
         Serial.println("Auto-fill timer (sec): " + (String)stop_time_secs);
         float fill_volume = water_volume_sensor.reported_water_volume() - water_volume;
         Serial.println("Auto-fill volume: " + (String)fill_volume);
-        digitalWrite(fill_pump_pin, LOW);
         lora.send_auto_fill_data(fill_volume, stop_reason);
       }
     }
