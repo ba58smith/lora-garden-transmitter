@@ -33,14 +33,22 @@ public:
 
 
     /**
-     * @brief Measures the millivolts from the pH sensor 20 times and outputs the values to the serial monitor.
+     * @brief Measures the millivolts from the pH sensor 20 times and outputs the values and the average to the serial monitor.
      * Used only to calibrate the pH sensor. (It's normally commented out in main.cpp.)
     */
 
    void pH_calibration() {
+      float reading = 0;
+      float sum = 0;
+      float avg = 0;
       for(uint8_t n = 0; n < 20; n++) {
-        Serial.println(analog_reader_.read_avg_mV(100, 10));
-      }  
+        reading = analog_reader_.read_avg_mV(100, 10);
+        sum += reading;
+        Serial.println(reading);
+      }
+      avg = sum / 20.0;
+      Serial.print("Avg = ");
+      Serial.println((int)avg);
    }   
   
 };

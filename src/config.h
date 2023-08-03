@@ -51,16 +51,16 @@ String TRANSMITTER_NAME = "Garden";
 #define PH_ALARM_CODE 1
 #define PH_ALARM_EMAIL_INTERVAL 360 // not urgent, per Fran (6 hours)
 #define PH_MAX_EMAILS 3
-#define PH_LOW_CAL_VOLTAGE_MV 2056.2 // avg millivolts in 4.00 pH calibration solution
-#define PH_MID_CAL_VOLTAGE_MV 1560.8 // avg millivolts in 7.00 pH calibration solution
-#define PH_HI_CAL_VOLTAGE_MV 1088.3 // avg millivolts in 10.00 pH calibration solution
+#define PH_LOW_CAL_VOLTAGE_MV 2783.2 // avg millivolts in 4.00 pH calibration solution
+#define PH_MID_CAL_VOLTAGE_MV 2578.5 // avg millivolts in 7.00 pH calibration solution
+#define PH_HI_CAL_VOLTAGE_MV 1650.0 // avg millivolts in 10.00 pH calibration solution
 
 #define LOW_WATER_ALARM_VALUE 14.0 // not urgent (Auto-refill s/h happened at 15.0)
 #define LOW_WATER_ALARM_CODE 1
 #define LOW_WATER_EMAIL_INTERVAL 360 // in minutes (6 hours)
 #define LOW_WATER_MAX_EMAILS 5
 
-#define HIGH_WATER_ALARM_VALUE 17.5 // tub c/b overflowing, stuck pump switch
+#define HIGH_WATER_ALARM_VALUE 18.0 // tub c/b overflowing, stuck pump switch
 #define HIGH_WATER_ALARM_CODE 33
 #define HIGH_WATER_EMAIL_INTERVAL 15 // in minutes
 #define HIGH_WATER_MAX_EMAILS 5

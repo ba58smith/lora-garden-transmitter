@@ -94,7 +94,7 @@ void setup() {
   elapsedMillis timer_ms = 0;
   Serial.println("Circ pump starting");
   digitalWrite(circ_pump_pin, HIGH);
-  //while (timer_ms < (5 * 1000)) {} // BAS: testing only
+  // while (timer_ms < (3 * 1000)) {} // BAS: testing only
   while (timer_ms < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
   Serial.println("Circ pump stopping");
   digitalWrite(circ_pump_pin, LOW);
