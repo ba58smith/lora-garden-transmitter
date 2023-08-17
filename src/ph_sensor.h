@@ -18,37 +18,34 @@ public:
     /**
      * @brief Takes the measured voltage from the probe (in mV) and applies
      * the calibration values, to output the final value. This is from Atlas Scientific's
-     * calibration software for Arduino, in the ph_gravity.cpp file.
+     * calibration software for Arduino, in the ph_gravity.cpp file. (They do 1,000 samples
+     * with no delay between them. I'm doing far fewer, but the results are the same.)
      */
 
     float reported_pH() {
-      float measured_mV = analog_reader_.read_avg_mV(200, 5);
+      float measured_mV = analog_reader_.read_avg_mV(250, 5);
+      float pH;
       if (measured_mV > PH_MID_CAL_VOLTAGE_MV) {  // high voltage == low ph
-        return 7.0 - 3.0 / (PH_LOW_CAL_VOLTAGE_MV - PH_MID_CAL_VOLTAGE_MV) * (measured_mV - PH_MID_CAL_VOLTAGE_MV);
+        pH = 7.0 - 3.0 / (PH_LOW_CAL_VOLTAGE_MV - PH_MID_CAL_VOLTAGE_MV) * (measured_mV - PH_MID_CAL_VOLTAGE_MV);
       }
       else {
-        return 7.0 - 3.0 / (PH_MID_CAL_VOLTAGE_MV - PH_HI_CAL_VOLTAGE_MV) * (measured_mV - PH_MID_CAL_VOLTAGE_MV);
+        pH = 7.0 - 3.0 / (PH_MID_CAL_VOLTAGE_MV - PH_HI_CAL_VOLTAGE_MV) * (measured_mV - PH_MID_CAL_VOLTAGE_MV);
       }
+      Serial.print("mV: " + String(measured_mV, 1) + "\t pH = " + String(pH, 1));
+      return pH;
     }
 
 
     /**
-     * @brief Measures the millivolts from the pH sensor 20 times and outputs the values and the average to the serial monitor.
-     * Used only to calibrate the pH sensor. (It's normally commented out in main.cpp.)
+     * @brief Measures the millivolts from the pH sensor multiple times and outputs the values to the serial monitor.
+     * Used only to calibrate the pH sensor. It's normally commented out in main.cpp.
     */
 
    void pH_calibration() {
-      float reading = 0;
-      float sum = 0;
-      float avg = 0;
-      for(uint8_t n = 0; n < 20; n++) {
-        reading = analog_reader_.read_avg_mV(100, 10);
-        sum += reading;
-        Serial.println(reading);
+      for(uint8_t n = 0; n < 100; n++) {  
+        reported_pH();
+        delay(5000);
       }
-      avg = sum / 20.0;
-      Serial.print("Avg = ");
-      Serial.println((int)avg);
    }   
   
 };
