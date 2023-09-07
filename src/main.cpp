@@ -91,14 +91,6 @@ void setup() {
     float_sw_activated = false; // the pin is LOW, so the variable s/b false
   }
 
-  elapsedMillis timer_ms = 0;
-  Serial.println("Circ pump starting");
-  digitalWrite(circ_pump_pin, HIGH);
-  // while (timer_ms < (3 * 1000)) {} // BAS: testing only
-  while (timer_ms < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
-  Serial.println("Circ pump stopping");
-  digitalWrite(circ_pump_pin, LOW);
-
   if (measure_things_this_run) { // measure all the things
 
     // Send the battery voltage
@@ -124,15 +116,15 @@ void setup() {
       if (water_volume <= REFILL_START_VOLUME && !float_sw_activated) {
         float stop_time_secs = 0.0;
         String stop_reason;
-        timer_ms = 0;
+        elapsedMillis fill_timer_ms = 0;
         Serial.println("Fill pump starting");
         digitalWrite(fill_pump_pin, HIGH);
         while (!float_sw_activated && water_volume_sensor.reported_water_volume() < REFILL_STOP_VOLUME
-               && timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
+               && fill_timer_ms < (AUTO_FILL_CUT_OFF_SECONDS * 1000.0)) {
               delay(1000); // fill a second, then check again
         }
         digitalWrite(fill_pump_pin, LOW);
-        stop_time_secs = (float)timer_ms / 1000.0;
+        stop_time_secs = (float)fill_timer_ms / 1000.0;
         if (stop_time_secs >= AUTO_FILL_CUT_OFF_SECONDS) {
           auto_fill_timed_out = true;
           stop_reason = "TIMER";
@@ -153,11 +145,21 @@ void setup() {
       }
     }
   }
-    // Give the last packet a couple seconds to go, then go to deep sleep for 5 minutes
-    delay(2000);
-    Serial.println("Going to sleep now");
-    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    esp_deep_sleep_start();
+
+  // Run the circulation pump
+  elapsedMillis circ_timer_ms = 0;
+  Serial.println("Circ pump starting");
+  digitalWrite(circ_pump_pin, HIGH);
+  // while (timer_ms < (3 * 1000)) {} // BAS: testing only
+  while (circ_timer_ms < (3 * 60 * 1000)) {} // run the circulation pump for 3 minutes
+  Serial.println("Circ pump stopping");
+  digitalWrite(circ_pump_pin, LOW);
+
+  // Go to deep sleep for 5 minutes
+  delay(2000);
+  Serial.println("Going to sleep now");
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  esp_deep_sleep_start();
 
 } // setup()
 
