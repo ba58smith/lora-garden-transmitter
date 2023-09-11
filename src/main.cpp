@@ -93,6 +93,11 @@ void setup() {
 
   if (measure_things_this_run) { // measure all the things
 
+    // Send the water level
+    float water_volume = water_volume_sensor.reported_water_volume();
+    Serial.println("Reported_water_volume:" + (String)water_volume);
+    lora.send_water_volume_data(water_volume);
+    
     // Send the battery voltage
     float voltage = voltage_sensor.reported_voltage();
     Serial.println("Reported_voltage:" + (String)voltage);
@@ -106,12 +111,7 @@ void setup() {
     lora.send_pH_data(pH);
     delay(500);
 
-    // Send the water level
-    float water_volume = water_volume_sensor.reported_water_volume();
-    Serial.println("Reported_water_volume:" + (String)water_volume);
-    lora.send_water_volume_data(water_volume);
-
-    // fill tub if necessary, then send a packet about that
+        // fill tub if necessary, then send a packet about that
     if (!auto_fill_timed_out) {
       if (water_volume <= REFILL_START_VOLUME && !float_sw_activated) {
         float stop_time_secs = 0.0;
