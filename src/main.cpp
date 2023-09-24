@@ -19,11 +19,12 @@ Tower Garden functions: operates the circulation pump and fill pump
  * make sure you un-comment the correct #define for the name of the transmitter that this code is
  * going to be used for.
  * 
- * If you change the #defined transmitter or the NETWORK_ID (in config.h):
- * Un-comment "#define LORA_SETUP_REQUIRED" below, upload and run once, then comment out "#define LORA_SETUP_REQUIRED".
- * That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
+ * If you change the #defined transmitter or the NETWORK_ID (in config.h), or, if it's the first time
+ * installing this firmware on a new ESP32:
+ * Un-comment "#define LORA_SETUP_REQUIRED" below, upload and run once, then comment out "#define LORA_SETUP_REQUIRED",
+ * and upload and run again. That will prevent writing the NETWORK_ID and NODE_ADDRESS to EEPROM every run.
  */
-//#define LORA_SETUP_REQUIRED
+// #define LORA_SETUP_REQUIRED
 
 uint8_t voltage_measurement_pin = 13;
 uint8_t fill_pump_pin = 22;
